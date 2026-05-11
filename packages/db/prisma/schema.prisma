@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id          Int      @id @default(autoincrement())
+  urlId       String   @unique
+  title       String
+  content     String   @default("")
+  detail      String   @default("")
+  description String   @default("")
+  imageUrl    String   @default("")
+  category    String?
+  tags        String   @default("")
+  published   Boolean  @default(true)
+  active      Boolean  @default(true)
+  views       Int      @default(0)
+  likes       Int      @default(0)
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  likeEntries Like[]
+
+  @@index([title])
+  @@index([category])
+  @@index([published])
+  @@index([active])
+  @@index([date])
+}
+
+model Like {
+  postId Int
+  userIP String
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([postId, userIP])
+}
