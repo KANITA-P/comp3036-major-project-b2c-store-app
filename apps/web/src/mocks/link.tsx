@@ -1,3 +1,5 @@
+/* eslint-disable react/prop-types */
+
 // mocks/next/link.js
 import React from "react";
 

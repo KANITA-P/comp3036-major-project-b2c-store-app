@@ -15,8 +15,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Full-Stack Blog",
-  description: "Blog about full stack development",
+  title: "Threadline Clothing Store",
+  description: "A B2C clothing store prototype built with Next.js and Prisma",
 };
 
 export default async function RootLayout({

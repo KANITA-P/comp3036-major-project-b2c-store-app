@@ -1,14 +1,8 @@
-import { AppLayout } from "../components/Layout/AppLayout";
-import { Main } from "../components/Main";
-import { getActivePosts } from "../server/posts";
-import styles from "./page.module.css";
+import { ProductGrid } from "@/components/ProductGrid";
+import { getProducts } from "@/server/products";
 
 export default async function Home() {
-  const posts = await getActivePosts();
+  const products = await getProducts();
 
-  return (
-    <AppLayout>
-      <Main posts={posts} className={styles.main} />
-    </AppLayout>
-  );
+  return <ProductGrid products={products} />;
 }

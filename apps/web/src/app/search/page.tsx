@@ -1,20 +1,13 @@
-import { AppLayout } from "@/components/Layout/AppLayout";
-import { Main } from "@/components/Main";
-import { getActivePosts } from "@/server/posts";
+import { ProductGrid } from "@/components/ProductGrid";
+import { getProducts } from "@/server/products";
 
-export default async function Page({
+export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams?: Promise<{ q?: string }>;
 }) {
-  const { q = "" } = await searchParams;
-  const posts = await getActivePosts({
-    query: q,
-  });
+  const params = (await searchParams) ?? {};
+  const products = await getProducts({ query: params.q });
 
-  return (
-    <AppLayout query={q}>
-      <Main posts={posts} />
-    </AppLayout>
-  );
+  return <ProductGrid products={products} />;
 }
