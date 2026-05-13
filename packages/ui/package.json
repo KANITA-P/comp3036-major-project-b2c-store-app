@@ -14,7 +14,7 @@
     "lint": "eslint . --max-warnings 0",
     "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit",
-    "test": "vitest --browser.headless",
+    "test": "vitest run --browser.headless",
     "dev:test": "vitest"
   },
   "devDependencies": {

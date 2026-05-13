@@ -27,25 +27,11 @@
       "persistent": true
     },
     "test": {
-      "dependsOn": ["check-types"]
+      "dependsOn": ["^build", "check-types"],
+      "outputs": []
     },
     "dev:test": {
       "dependsOn": ["check-types"]
-    },
-    "test-1": {},
-    "dev:test-1": {
-      "dependsOn": ["dev:test"]
-    },
-    "test-2": {},
-    "dev:test-2": {
-      "dependsOn": ["dev:test"]
-    },
-    "test-3": {},
-    "dev:test-3": {
-      "dependsOn": ["dev:test"]
-    },
-    "all:test": {
-      "dependsOn": ["test", "test-1", "test-2", "test-3"]
     },
     "db:generate": {
       "dependsOn": ["^db:generate"]

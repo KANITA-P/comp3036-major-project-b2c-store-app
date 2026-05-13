@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc",
-    "test": "tsc --noEmit && vitest",
+    "test": "tsc --noEmit && vitest run",
     "dev:test": "tsc --noEmit && vitest",
     "lint": "eslint . --max-warnings 0"
   },

@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint --max-warnings 0",
     "check-types": "tsc --noEmit",
-    "test": "vitest --browser.headless",
+    "test": "vitest run --browser.headless",
     "dev:test": "vitest"
   },
   "dependencies": {
