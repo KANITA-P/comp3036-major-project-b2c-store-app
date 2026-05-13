@@ -1,37 +1,50 @@
 import { client } from "./client.js";
-import { posts } from "./data.js";
+import { categories, products } from "./data.js";
 
 export async function seed() {
-  console.log("🌱 Seeding data");
-  await client.db.like.deleteMany();
-  await client.db.post.deleteMany();
-  for (const post of posts) {
-    await client.db.post.create({
-      data: {
-        title: post.title,
-        content: post.content,
-        category: post.category,
-        description: post.description,
-        imageUrl: post.imageUrl,
-        tags: post.tags
-          .split(",")
-          .map((tag: string) => tag.trim())
-          .join(","),
-        urlId: post.urlId,
-        active: post.active,
-        date: post.date,
-        id: post.id,
-        views: post.views,
-        likes: post.likes,
+  console.log("Seeding clothing store data");
+
+  for (const name of categories) {
+    await client.db.category.upsert({
+      where: { name },
+      update: { name },
+      create: { name },
+    });
+  }
+
+  const categoryRecords = await client.db.category.findMany();
+  const categoryByName = new Map(
+    categoryRecords.map((category) => [category.name, category.id]),
+  );
+
+  for (const product of products) {
+    const categoryId = categoryByName.get(product.category);
+
+    if (!categoryId) {
+      throw new Error(`Missing category ${product.category}`);
+    }
+
+    await client.db.product.upsert({
+      where: { id: product.id },
+      update: {
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        image: product.image,
+        stock: product.stock,
+        categoryId,
+      },
+      create: {
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        image: product.image,
+        stock: product.stock,
+        categoryId,
       },
     });
-    for (let i = 0; i < post.likes; i++) {
-      await client.db.like.create({
-        data: {
-          postId: post.id,
-          userIP: `192.168.100.${i}`,
-        },
-      });
-    }
   }
+
+  console.log(`Seeded ${categories.length} categories and ${products.length} products`);
 }

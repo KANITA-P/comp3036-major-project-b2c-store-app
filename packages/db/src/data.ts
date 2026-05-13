@@ -1,106 +1,94 @@
-export type Post = {
+export type Product = {
   id: number;
-  urlId: string;
-  title: string;
-  content: string;
+  name: string;
   description: string;
-  imageUrl: string;
-  date: Date;
+  price: number;
+  image: string;
+  stock: number;
   category: string;
-  views: number;
-  likes: number;
-  tags: string;
-  active: boolean;
 };
 
-const content = `
-  # Title 1
+export const categories = ["Jackets", "Hoodies", "Pants", "Accessories"];
 
-  Illo **sint voluptas**. Error voluptates culpa eligendi. 
-  Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. 
-  Sed exercitationem placeat consectetur nulla deserunt vel 
-  iusto corrupti dicta laboris incididunt.
-
-  ## Subtitle 1
-
-  Illo sint *voluptas*. Error voluptates culpa eligendi. 
-  Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. 
-  Sed exercitationem placeat consectetur nulla deserunt vel 
-  iusto corrupti dicta laboris incididunt.
-`;
-
-const description = `Illo sint voluptas. Error voluptates culpa eligendi. 
-Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. 
-Sed exercitationem placeat consectetur nulla deserunt vel 
-iusto corrupti dicta laboris incididunt.`;
-
-export const posts: Post[] = [
+export const products: Product[] = [
   {
     id: 1,
-    title: "Boost your conversion rate",
-    urlId: "boost-your-conversion-rate",
-    description,
-    content: content + " ... post1",
-    imageUrl:
-      "https://images.unsplash.com/photo-1496128858413-b36217c2ce36?ixlib=rb-4.0.3&auto=format&fit=crop&w=3603&q=80",
-    date: new Date("Apr 18, 2022"),
-    category: "Node",
-    tags: "Back-End,Databases",
-    views: 320,
-    likes: 3,
-    active: true,
+    name: "Stormline Shell Jacket",
+    description: "Water-resistant layer with sealed pockets and a relaxed city fit.",
+    price: 189,
+    image:
+      "https://images.unsplash.com/photo-1548883354-94bcfe321cbb?auto=format&fit=crop&w=1200&q=80",
+    stock: 12,
+    category: "Jackets",
   },
   {
     id: 2,
-    title: "Better front ends with Fatboy Slim",
-    urlId: "better-front-ends-with-fatboy-slim",
-    description: `Illo sint voluptas. Error voluptates culpa eligendi. 
-       Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. 
-       Sed exercitationem placeat consectetur nulla deserunt vel 
-       iusto corrupti dicta laboris incididunt.`,
-    content: content + " ... post2",
-    imageUrl:
-      "https://plus.unsplash.com/premium_photo-1661342428515-5ca8cee4385a?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.0.3",
-    date: new Date("Mar 16, 2020"),
-    category: "React",
-    tags: "Front-End,Optimisation",
-    views: 10,
-    likes: 1,
-    active: true,
+    name: "Wool Blend Overshirt",
+    description: "Warm brushed overshirt cut for layering over tees and knitwear.",
+    price: 149,
+    image:
+      "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=1200&q=80",
+    stock: 9,
+    category: "Jackets",
   },
   {
     id: 3,
-    title: "No front end framework is the best",
-    urlId: "no-front-end-framework-is-the-best",
-    description: `Illo sint voluptas. Error voluptates culpa eligendi. 
-       Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. 
-       Sed exercitationem placeat consectetur nulla deserunt vel 
-       iusto corrupti dicta laboris incididunt.`,
-    content: content + " ... post3",
-    imageUrl:
-      "https://plus.unsplash.com/premium_photo-1661517706036-a48d5fc8f2f5?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    date: new Date("Dec 16, 2024"),
-    category: "React",
-    tags: "Front-End,Dev Tools",
-    views: 22,
-    likes: 2,
-    active: true,
+    name: "Everyday Heavy Hoodie",
+    description: "Structured cotton fleece hoodie with a soft loopback interior.",
+    price: 89,
+    image:
+      "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=80",
+    stock: 18,
+    category: "Hoodies",
   },
   {
     id: 4,
-    title: "Visual Basic is the future",
-    urlId: "visual-basic-is-the-future",
-    description: `Illo sint voluptas. Error voluptates culpa eligendi. 
-       Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. 
-       Sed exercitationem placeat consectetur nulla deserunt vel 
-       iusto corrupti dicta laboris incididunt.`,
-    content: content + " ... post4",
-    imageUrl: "https://m.media-amazon.com/images/I/51NqEfmmBTL.jpg",
-    date: new Date("Dec 16, 2012"),
-    category: "React",
-    tags: "Programming,Mainframes",
-    views: 22,
-    likes: 1,
-    active: false,
+    name: "Quarter Zip Travel Hoodie",
+    description: "Compact hoodie with hidden side pockets and a neat stand collar.",
+    price: 99,
+    image:
+      "https://images.unsplash.com/photo-1578681994506-b8f463449011?auto=format&fit=crop&w=1200&q=80",
+    stock: 14,
+    category: "Hoodies",
+  },
+  {
+    id: 5,
+    name: "Tapered Cargo Pants",
+    description: "Durable twill pants with low-profile cargo storage and stretch.",
+    price: 119,
+    image:
+      "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=1200&q=80",
+    stock: 11,
+    category: "Pants",
+  },
+  {
+    id: 6,
+    name: "Wide Leg Utility Trouser",
+    description: "Clean pleated trouser with a roomy silhouette and crisp drape.",
+    price: 129,
+    image:
+      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=1200&q=80",
+    stock: 7,
+    category: "Pants",
+  },
+  {
+    id: 7,
+    name: "Rib Knit Beanie",
+    description: "Soft recycled yarn beanie with a fold-over cuff and minimal label.",
+    price: 34,
+    image:
+      "https://images.unsplash.com/photo-1511556820780-d912e42b4980?auto=format&fit=crop&w=1200&q=80",
+    stock: 24,
+    category: "Accessories",
+  },
+  {
+    id: 8,
+    name: "Canvas Crossbody Bag",
+    description: "Everyday compact bag with an adjustable strap and secure zip top.",
+    price: 59,
+    image:
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=1200&q=80",
+    stock: 16,
+    category: "Accessories",
   },
 ];

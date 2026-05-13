@@ -1,46 +1,43 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Post {
-  id          Int      @id @default(autoincrement())
-  urlId       String   @unique
-  title       String
-  content     String   @default("")
-  detail      String   @default("")
-  description String   @default("")
-  imageUrl    String   @default("")
-  category    String?
-  tags        String   @default("")
-  published   Boolean  @default(true)
-  active      Boolean  @default(true)
-  views       Int      @default(0)
-  likes       Int      @default(0)
-  date        DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  likeEntries Like[]
-
-  @@index([title])
-  @@index([category])
-  @@index([published])
-  @@index([active])
-  @@index([date])
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[]
 }
 
-model Like {
-  postId Int
-  userIP String
+model Product {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  price       Decimal    @db.Decimal(10, 2)
+  image       String
+  stock       Int        @default(0)
+  categoryId  Int
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  category    Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  cartItems   CartItem[]
 
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  @@index([name])
+  @@index([categoryId])
+  @@index([stock])
+}
 
-  @@id([postId, userIP])
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
 }

@@ -8,6 +8,7 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:push": "prisma db push",
+    "db:seed": "pnpm build && prisma db seed",
     "lint": "eslint . --max-warnings 0",
     "prebuild": "pnpm db:generate",
     "predev": "pnpm db:generate",
@@ -29,6 +30,9 @@
       "types": "./src/seed.ts",
       "default": "./dist/seed.js"
     }
+  },
+  "prisma": {
+    "seed": "node dist/run-seed.js"
   },
   "dependencies": {
     "@repo/env": "workspace:*"
