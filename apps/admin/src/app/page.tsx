@@ -4,47 +4,43 @@ import { isLoggedIn } from "../utils/auth";
 import { AdminList } from "./admin-list";
 import { LogoutButton } from "./logout-button";
 import styles from "./page.module.css";
+
 export default async function Home({
   searchParams,
 }: {
   searchParams?: Promise<{ error?: string }>;
 }) {
-  // use the is logged in function to check if user is authorised
-  // we will use the cookie based approach
   const loggedIn = await isLoggedIn();
   const params = (await searchParams) ?? {};
-  const posts = loggedIn
+  const products = loggedIn
     ? (
-      await client.db.post.findMany({
-        orderBy: {
-          date: "desc",
-        },
-        select: {
-          id: true,
-          title: true,
-          content: true,
-          urlId: true,
-          imageUrl: true,
-          date: true,
-          category: true,
-          tags: true,
-          active: true,
-        },
-      })
-    ).map((post) => ({
-      ...post,
-      category: post.category ?? "",
-      tags: post.tags ?? "",
-    }))
+        await client.db.product.findMany({
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            category: true,
+          },
+        })
+      ).map((product) => ({
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        image: product.image,
+        price: Number(product.price),
+        stock: product.stock,
+        category: product.category.name,
+        createdAt: product.createdAt,
+      }))
     : [];
 
   if (!loggedIn) {
     return (
       <main className={styles.authMain}>
         <section className={styles.authCard} aria-label="Admin login">
-          <p className={styles.eyebrow}>Full Stack Blog Admin</p>
+          <p className={styles.eyebrow}>Threadline Admin</p>
           <h1 className={styles.authTitle}>Welcome back</h1>
-          <p className={styles.authSubtitle}>Sign in to your account</p>
+          <p className={styles.authSubtitle}>Sign in to manage store products</p>
 
           <form action="/api/auth" className={styles.authForm} method="post">
             <label className={styles.label} htmlFor="password">
@@ -69,26 +65,26 @@ export default async function Home({
         </section>
       </main>
     );
-  } else {
-    return (
-      <main className={styles.main}>
-        <header className={styles.header}>
-          <div>
-            <p className={styles.eyebrow}>Dashboard</p>
-            <h1 className={styles.pageTitle}>Admin of Full Stack Blog</h1>
-          </div>
-
-          <div className={styles.headerActions}>
-            <Link className={styles.primaryLink} href="/posts/create">
-              Create Post
-            </Link>
-
-            <LogoutButton className={styles.secondaryButton} />
-          </div>
-        </header>
-
-        <AdminList posts={posts} />
-      </main>
-    );
   }
+
+  return (
+    <main className={styles.main}>
+      <header className={styles.header}>
+        <div>
+          <p className={styles.eyebrow}>Dashboard</p>
+          <h1 className={styles.pageTitle}>Store Product Admin</h1>
+        </div>
+
+        <div className={styles.headerActions}>
+          <Link className={styles.primaryLink} href="/products/create">
+            Create Product
+          </Link>
+
+          <LogoutButton className={styles.secondaryButton} />
+        </div>
+      </header>
+
+      <AdminList products={products} />
+    </main>
+  );
 }

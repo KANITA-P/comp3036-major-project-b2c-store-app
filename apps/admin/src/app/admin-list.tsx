@@ -1,126 +1,64 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import Link from "next/link";
 import { useState } from "react";
 import styles from "./page.module.css";
 
-type AdminPost = {
+type AdminProduct = {
   id: number;
-  title: string;
-  content: string;
-  urlId: string;
-  imageUrl: string;
-  date: Date | string;
+  name: string;
+  description: string;
+  image: string;
+  price: number;
+  stock: number;
   category: string;
-  tags: string;
-  active: boolean;
+  createdAt: Date | string;
 };
 
 type AdminListProps = {
-  posts: AdminPost[];
+  products: AdminProduct[];
 };
 
-function formatTags(tags: string) {
-  return tags
-    .split(",")
-    .map((tag) => `#${tag.trim()}`)
-    .join(", ");
-}
-
-export function AdminList({ posts }: AdminListProps) {
-  const [items, setItems] = useState(() =>
-    posts.map((post) => ({
-      ...post,
-      date: new Date(post.date),
+export function AdminList({ products }: AdminListProps) {
+  const [items] = useState(() =>
+    products.map((product) => ({
+      ...product,
+      createdAt: new Date(product.createdAt),
     })),
   );
-  const [contentQuery, setContentQuery] = useState("");
-  const [tagQuery, setTagQuery] = useState("");
-  const [dateQuery, setDateQuery] = useState("");
-  const [visibilityQuery, setVisibilityQuery] = useState("all");
-  const [sortBy, setSortBy] = useState("date-desc");
-  const [pendingPostId, setPendingPostId] = useState<number | null>(null);
+  const [query, setQuery] = useState("");
+  const [categoryQuery, setCategoryQuery] = useState("all");
+  const [sortBy, setSortBy] = useState("created-desc");
 
-  const normalizedContentQuery = contentQuery.trim().toLowerCase();
-  const normalizedTagQuery = tagQuery.trim().toLowerCase();
-  const normalizedDateQuery = dateQuery.replace(/\D/g, "");
+  const categories = Array.from(new Set(items.map((item) => item.category))).sort();
+  const normalizedQuery = query.trim().toLowerCase();
 
-  const parsedDate =
-    normalizedDateQuery.length === 8
-      ? new Date(
-        Number(normalizedDateQuery.slice(4, 8)),
-        Number(normalizedDateQuery.slice(2, 4)) - 1,
-        Number(normalizedDateQuery.slice(0, 2)),
-      )
-      : null;
+  const filteredProducts = items.filter((product) => {
+    const matchesQuery =
+      !normalizedQuery ||
+      product.name.toLowerCase().includes(normalizedQuery) ||
+      product.description.toLowerCase().includes(normalizedQuery);
+    const matchesCategory =
+      categoryQuery === "all" || product.category === categoryQuery;
 
-  async function togglePost(post: AdminPost) {
-    if (pendingPostId === post.id) return;
-
-    setPendingPostId(post.id);
-
-    try {
-      const response = await fetch(`/api/posts/${post.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ active: !post.active }),
-      });
-
-      const body = await response.json().catch(() => null);
-
-      if (!response.ok || !body) {
-        return;
-      }
-
-      setItems((current) =>
-        current.map((item) =>
-          item.id === post.id ? { ...item, active: Boolean(body.active) } : item,
-        ),
-      );
-    } finally {
-      setPendingPostId(null);
-    }
-  }
-
-  const filteredPosts = items.filter((post) => {
-    const matchesContent =
-      !normalizedContentQuery ||
-      post.title.toLowerCase().includes(normalizedContentQuery) ||
-      post.content.toLowerCase().includes(normalizedContentQuery);
-
-    const matchesTag =
-      !normalizedTagQuery ||
-      post.tags
-        .split(",")
-        .some((tag) => tag.trim().toLowerCase().includes(normalizedTagQuery));
-
-    const matchesDate =
-      !normalizedDateQuery ||
-      !parsedDate ||
-      Number.isNaN(parsedDate.getTime()) ||
-      post.date >= parsedDate;
-
-    const matchesVisibility =
-      visibilityQuery === "all" ||
-      (visibilityQuery === "active" && post.active) ||
-      (visibilityQuery === "inactive" && !post.active);
-
-    return matchesContent && matchesTag && matchesDate && matchesVisibility;
+    return matchesQuery && matchesCategory;
   });
 
-  const sortedPosts = [...filteredPosts].sort((left, right) => {
+  const sortedProducts = [...filteredProducts].sort((left, right) => {
     switch (sortBy) {
-      case "title-asc":
-        return left.title.localeCompare(right.title);
-      case "title-desc":
-        return right.title.localeCompare(left.title);
-      case "date-asc":
-        return left.date.getTime() - right.date.getTime();
-      case "date-desc":
+      case "name-asc":
+        return left.name.localeCompare(right.name);
+      case "name-desc":
+        return right.name.localeCompare(left.name);
+      case "stock-asc":
+        return left.stock - right.stock;
+      case "stock-desc":
+        return right.stock - left.stock;
+      case "created-desc":
       default:
-        return right.date.getTime() - left.date.getTime();
+        return right.createdAt.getTime() - left.createdAt.getTime();
     }
   });
 
@@ -129,112 +67,71 @@ export function AdminList({ posts }: AdminListProps) {
       <section className={styles.filters}>
         <div className={styles.filterGrid}>
           <div className={styles.filterField}>
-            <label className={styles.label} htmlFor="filter-content">
-              Filter by Content:
+            <label className={styles.label} htmlFor="filter-product">
+              Filter by Product
             </label>
             <input
               className={styles.input}
-              id="filter-content"
-              name="filter-content"
+              id="filter-product"
               type="text"
-              value={contentQuery}
-              onChange={(event) => setContentQuery(event.target.value)}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
             />
           </div>
 
           <div className={styles.filterField}>
-            <label className={styles.label} htmlFor="filter-tag">
-              Filter by Tag:
-            </label>
-            <input
-              className={styles.input}
-              id="filter-tag"
-              name="filter-tag"
-              type="text"
-              value={tagQuery}
-              onChange={(event) => setTagQuery(event.target.value)}
-            />
-          </div>
-
-          <div className={styles.filterField}>
-            <label className={styles.label} htmlFor="filter-date-created">
-              Filter by Date Created:
-            </label>
-            <input
-              className={styles.input}
-              id="filter-date-created"
-              name="filter-date-created"
-              type="text"
-              inputMode="numeric"
-              value={dateQuery}
-              onChange={(event) => setDateQuery(event.target.value)}
-            />
-          </div>
-          <div className={styles.filterField}>
-            <label className={styles.label} htmlFor="filter-visibility">
-              Filter by Visibility:
+            <label className={styles.label} htmlFor="filter-category">
+              Filter by Category
             </label>
             <select
               className={styles.input}
-              id="filter-visibility"
-              name="filter-visibility"
-              value={visibilityQuery}
-              onChange={(event) => setVisibilityQuery(event.target.value)}
+              id="filter-category"
+              value={categoryQuery}
+              onChange={(event) => setCategoryQuery(event.target.value)}
             >
               <option value="all">All</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
             </select>
           </div>
+
           <div className={styles.filterField}>
             <label className={styles.label} htmlFor="sort-by">
-              Sort By:
+              Sort By
             </label>
             <select
               className={styles.input}
               id="sort-by"
-              name="sort-by"
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value)}
             >
-              <option value="title-asc">Title A-Z</option>
-              <option value="title-desc">Title Z-A</option>
-              <option value="date-asc">Date oldest first</option>
-              <option value="date-desc">Date newest first</option>
+              <option value="created-desc">Newest first</option>
+              <option value="name-asc">Name A-Z</option>
+              <option value="name-desc">Name Z-A</option>
+              <option value="stock-asc">Stock low-high</option>
+              <option value="stock-desc">Stock high-low</option>
             </select>
           </div>
         </div>
       </section>
 
       <section className={styles.list}>
-        {sortedPosts.map((post) => (
-          <article className={styles.card} key={post.id}>
-            {post.imageUrl && (
-              <img alt={post.title} className={styles.image} src={post.imageUrl} />
-            )}
+        {sortedProducts.map((product) => (
+          <article className={styles.card} key={product.id}>
+            <img alt={product.name} className={styles.image} src={product.image} />
             <div className={styles.cardBody}>
-              <Link className={styles.titleLink} href={`/post/${post.urlId}`}>
-                {post.title}
+              <Link className={styles.titleLink} href={`/product/${product.id}`}>
+                {product.name}
               </Link>
-              <p className={styles.meta}>{post.category}</p>
-              <p className={styles.meta}>{formatTags(post.tags)}</p>
-              <button
-                className={styles.statusButton}
-                type="button"
-                onClick={() => togglePost(post)}
-                disabled={pendingPostId === post.id}
-                aria-pressed={post.active}
-                aria-label={
-                  post.active
-                    ? `Deactivate post ${post.title}`
-                    : `Activate post ${post.title}`
-                }
-              >
-                {post.active ? "Active" : "Inactive"}
-              </button>
+              <p className={styles.meta}>{product.category}</p>
+              <p className={styles.meta}>${product.price.toFixed(2)}</p>
+              <p className={styles.meta}>{product.stock} in stock</p>
               <p className={styles.meta}>
-                Posted on{" "}
-                {post.date.toLocaleDateString("en-US", {
+                Added{" "}
+                {product.createdAt.toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                   year: "numeric",
