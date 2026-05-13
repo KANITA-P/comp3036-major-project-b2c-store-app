@@ -175,10 +175,6 @@ importers:
         version: 0.0.4(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(@vitest/browser@3.0.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(vitest@3.0.4)
 
   packages/db:
-    dependencies:
-      '@repo/env':
-        specifier: workspace:*
-        version: link:../env
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*

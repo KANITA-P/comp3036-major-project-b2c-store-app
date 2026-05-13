@@ -34,9 +34,7 @@
   "prisma": {
     "seed": "node dist/run-seed.js"
   },
-  "dependencies": {
-    "@repo/env": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",

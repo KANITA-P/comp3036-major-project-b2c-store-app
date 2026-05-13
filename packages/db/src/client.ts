@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { env } from "@repo/env/web";
 
 declare global {
   var prisma: PrismaClient | undefined;
@@ -10,14 +9,18 @@ export const createClient = () => {
     return global.prisma;
   }
 
-  const URL = env.DATABASE_URL;
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is not set");
+  }
 
   const prisma = new PrismaClient({
-    datasourceUrl: URL,
+    datasourceUrl: databaseUrl,
   });
 
   console.log("Connected to database");
-  console.log(URL);
+  console.log(databaseUrl);
 
   global.prisma = prisma;
   return prisma;
