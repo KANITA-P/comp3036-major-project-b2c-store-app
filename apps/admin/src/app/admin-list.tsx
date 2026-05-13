@@ -120,7 +120,11 @@ export function AdminList({ products }: AdminListProps) {
 
       <section className={styles.list}>
         {sortedProducts.map((product) => (
-          <article className={styles.card} key={product.id}>
+          <article
+            className={styles.card}
+            data-test-id="admin-product-card"
+            key={product.id}
+          >
             <img alt={product.name} className={styles.image} src={product.image} />
             <div className={styles.cardBody}>
               <Link className={styles.titleLink} href={`/product/${product.id}`}>

@@ -14,7 +14,10 @@ export function ProductCard({
   const isSoldOut = product.stock < 1;
 
   return (
-    <article className="group overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+    <article
+      className="group overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+      data-test-id="product-card"
+    >
       <div className="aspect-[4/5] overflow-hidden bg-neutral-100">
         <img
           alt={product.name}
