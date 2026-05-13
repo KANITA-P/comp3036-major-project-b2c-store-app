@@ -3,12 +3,14 @@ import { NextResponse } from "next/server";
 import { AUTH_COOKIE_NAME } from "../../../utils/auth";
 import { signJwt } from "../../../utils/jwt";
 
-function setAuthCookie(response: NextResponse, value: string) {
+function setAuthCookie(response: NextResponse, value: string, request: Request) {
+  const isHttps = new URL(request.url).protocol === "https:";
+
   response.cookies.set(AUTH_COOKIE_NAME, value, {
     httpOnly: true,
     path: "/",
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === "production" && isHttps,
   });
 }
 
@@ -64,12 +66,12 @@ export async function POST(request: Request) {
 
   if (!jsonRequest) {
     const response = NextResponse.redirect(new URL("/", request.url), 303);
-    setAuthCookie(response, token);
+    setAuthCookie(response, token, request);
     return response;
   }
 
   const response = NextResponse.json({ success: true });
-  setAuthCookie(response, token);
+  setAuthCookie(response, token, request);
   return response;
 }
 
