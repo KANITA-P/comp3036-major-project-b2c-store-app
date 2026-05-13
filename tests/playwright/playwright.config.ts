@@ -38,13 +38,13 @@ export default defineConfig({
   webServer: [
     {
       command: "pnpm --filter @repo/web exec next start -p 3001",
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
       timeout: 120_000,
       url: "http://localhost:3001",
     },
     {
       command: "pnpm --filter @repo/admin exec next start -p 3002",
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
       timeout: 120_000,
       url: "http://localhost:3002",
     },
