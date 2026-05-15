@@ -3,9 +3,17 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
+import { LogoutButton } from "@/app/logout-button";
+import type { CustomerSession } from "@/utils/auth";
 import { CartButton } from "./CartButton";
 
-export function Navbar({ cartCount }: { cartCount: number }) {
+export function Navbar({
+  cartCount,
+  currentUser,
+}: {
+  cartCount: number;
+  currentUser: CustomerSession | null;
+}) {
   const router = useRouter();
 
   function handleSearch(event: React.FormEvent<HTMLFormElement>) {
@@ -46,8 +54,62 @@ export function Navbar({ cartCount }: { cartCount: number }) {
               type="search"
             />
           </form>
+          {currentUser ? (
+            <>
+              <Link
+                className="hidden text-sm font-medium text-neutral-600 hover:text-neutral-950 sm:inline"
+                href="/account"
+              >
+                Account
+              </Link>
+              <LogoutButton />
+            </>
+          ) : (
+            <div className="hidden items-center gap-3 sm:flex">
+              <Link
+                className="text-sm font-medium text-neutral-600 hover:text-neutral-950"
+                href="/login"
+              >
+                Login
+              </Link>
+              <Link
+                className="text-sm font-bold text-neutral-950 hover:text-neutral-600"
+                href="/register"
+              >
+                Register
+              </Link>
+            </div>
+          )}
           <CartButton count={cartCount} />
         </div>
+      </div>
+      <div className="flex items-center justify-center gap-4 border-t border-neutral-200 px-5 py-3 sm:hidden">
+        {currentUser ? (
+          <>
+            <Link
+              className="text-sm font-medium text-neutral-600 hover:text-neutral-950"
+              href="/account"
+            >
+              Account
+            </Link>
+            <LogoutButton />
+          </>
+        ) : (
+          <>
+            <Link
+              className="text-sm font-medium text-neutral-600 hover:text-neutral-950"
+              href="/login"
+            >
+              Login
+            </Link>
+            <Link
+              className="text-sm font-bold text-neutral-950 hover:text-neutral-600"
+              href="/register"
+            >
+              Register
+            </Link>
+          </>
+        )}
       </div>
     </header>
   );

@@ -4,6 +4,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { StoreProduct } from "@/server/products";
+import type { CustomerSession } from "@/utils/auth";
 import { CategoryFilter } from "./CategoryFilter";
 import { Navbar } from "./Navbar";
 import { ProductCard } from "./ProductCard";
@@ -15,9 +16,11 @@ type CartLine = StoreProduct & {
 export function ProductGrid({
   products,
   selectedCategory,
+  currentUser,
 }: {
   products: StoreProduct[];
   selectedCategory?: string;
+  currentUser: CustomerSession | null;
 }) {
   const [cart, setCart] = useState<CartLine[]>([]);
 
@@ -70,7 +73,7 @@ export function ProductGrid({
 
   return (
     <div className="min-h-screen bg-stone-50 text-neutral-950">
-      <Navbar cartCount={cartCount} />
+      <Navbar cartCount={cartCount} currentUser={currentUser} />
 
       <main>
         <section className="mx-auto grid max-w-7xl gap-8 px-5 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-14">
