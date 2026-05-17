@@ -7,7 +7,7 @@ import type { StoreProduct } from "@/server/products";
 import type { CustomerSession } from "@/utils/auth";
 import { CategoryFilter } from "./CategoryFilter";
 import { Navbar } from "./Navbar";
-import { ProductCard } from "./ProductCard";
+import { handleProductImageError, ProductCard } from "./ProductCard";
 
 type CartLine = StoreProduct & {
   quantity: number;
@@ -100,6 +100,7 @@ export function ProductGrid({
                 <img
                   alt={featuredProduct.name}
                   className="absolute inset-0 h-full w-full object-cover opacity-80"
+                  onError={handleProductImageError}
                   src={featuredProduct.image}
                 />
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-neutral-950/85 to-transparent p-6 text-white">

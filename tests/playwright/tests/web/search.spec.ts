@@ -29,11 +29,13 @@ test.describe("Product search", () => {
     await expect(
       page.getByTestId("product-card").filter({ hasText: "Wool Blend Overshirt" }),
     ).toBeVisible();
-    await expect(page.getByText("Everyday Heavy Hoodie")).not.toBeVisible();
+    await expect(
+      page.getByTestId("product-card").filter({ hasText: "Everyday Heavy Hoodie" }),
+    ).toHaveCount(0);
   });
 
   test("search query URL loads hoodie products", async ({ page }) => {
-    await page.goto("/search?q=Hoodie");
+    await page.goto("/search?q=Hoodies");
 
     await expect(
       page.getByTestId("product-card").filter({ hasText: "Everyday Heavy Hoodie" }),
@@ -41,7 +43,9 @@ test.describe("Product search", () => {
     await expect(
       page.getByTestId("product-card").filter({ hasText: "Quarter Zip Travel Hoodie" }),
     ).toBeVisible();
-    await expect(page.getByText("Stormline Shell Jacket")).not.toBeVisible();
+    await expect(
+      page.getByTestId("product-card").filter({ hasText: "Stormline Shell Jacket" }),
+    ).toHaveCount(0);
   });
 
   test("invalid search shows no matching products", async ({ page }) => {
