@@ -1,0 +1,72 @@
+name: B2C Store CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: threadline_store
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d threadline_store"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      CI: true
+      E2E: true
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/threadline_store?schema=public
+      JWT_SECRET: test-secret
+      PASSWORD: "123"
+      SKIP_ENV_VALIDATION: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.2.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @repo/db db:generate
+
+      - name: Apply database migrations
+        run: pnpm --filter @repo/db db:migrate:deploy
+
+      - name: Seed store data
+        run: pnpm --filter @repo/db db:seed
+
+      - name: Lint web and admin
+        run: |
+          pnpm --filter @repo/web lint
+          pnpm --filter @repo/admin lint
+
+      - name: Install Playwright browser
+        working-directory: tests/playwright
+        run: pnpm playwright install chromium --with-deps
+
+      - name: Run Turbo tests
+        run: pnpm turbo test

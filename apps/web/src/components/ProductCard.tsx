@@ -2,7 +2,15 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import type { SyntheticEvent } from "react";
 import type { StoreProduct } from "@/server/products";
+
+export const PRODUCT_IMAGE_FALLBACK =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 750'%3E%3Crect width='600' height='750' fill='%23f5f5f4'/%3E%3Cpath d='M185 290h230v170H185z' fill='none' stroke='%23a3a3a3' stroke-width='14'/%3E%3Cpath d='m210 430 70-80 55 60 42-46 52 66' fill='none' stroke='%23a3a3a3' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='380' cy='330' r='24' fill='%23a3a3a3'/%3E%3C/svg%3E";
+
+export function handleProductImageError(event: SyntheticEvent<HTMLImageElement>) {
+  event.currentTarget.src = PRODUCT_IMAGE_FALLBACK;
+}
 
 export function ProductCard({
   product,
@@ -14,11 +22,15 @@ export function ProductCard({
   const isSoldOut = product.stock < 1;
 
   return (
-    <article className="group overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+    <article
+      className="group overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+      data-test-id="product-card"
+    >
       <div className="aspect-[4/5] overflow-hidden bg-neutral-100">
         <img
           alt={product.name}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          onError={handleProductImageError}
           src={product.image}
         />
       </div>

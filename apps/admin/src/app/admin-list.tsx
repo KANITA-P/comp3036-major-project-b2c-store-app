@@ -3,8 +3,16 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
+import type { SyntheticEvent } from "react";
 import { useState } from "react";
 import styles from "./page.module.css";
+
+const PRODUCT_IMAGE_FALLBACK =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 750'%3E%3Crect width='600' height='750' fill='%23f5f5f4'/%3E%3Cpath d='M185 290h230v170H185z' fill='none' stroke='%23a3a3a3' stroke-width='14'/%3E%3Cpath d='m210 430 70-80 55 60 42-46 52 66' fill='none' stroke='%23a3a3a3' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='380' cy='330' r='24' fill='%23a3a3a3'/%3E%3C/svg%3E";
+
+function handleProductImageError(event: SyntheticEvent<HTMLImageElement>) {
+  event.currentTarget.src = PRODUCT_IMAGE_FALLBACK;
+}
 
 type AdminProduct = {
   id: number;
@@ -120,8 +128,17 @@ export function AdminList({ products }: AdminListProps) {
 
       <section className={styles.list}>
         {sortedProducts.map((product) => (
-          <article className={styles.card} key={product.id}>
-            <img alt={product.name} className={styles.image} src={product.image} />
+          <article
+            className={styles.card}
+            data-test-id="admin-product-card"
+            key={product.id}
+          >
+            <img
+              alt={product.name}
+              className={styles.image}
+              onError={handleProductImageError}
+              src={product.image}
+            />
             <div className={styles.cardBody}>
               <Link className={styles.titleLink} href={`/product/${product.id}`}>
                 {product.name}

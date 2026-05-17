@@ -1,8 +1,12 @@
 import { ProductGrid } from "@/components/ProductGrid";
 import { getProducts } from "@/server/products";
+import { getCurrentUser } from "@/utils/auth";
 
 export default async function Home() {
-  const products = await getProducts();
+  const [products, currentUser] = await Promise.all([
+    getProducts(),
+    getCurrentUser(),
+  ]);
 
-  return <ProductGrid products={products} />;
+  return <ProductGrid currentUser={currentUser} products={products} />;
 }

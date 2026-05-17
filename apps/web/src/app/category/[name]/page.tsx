@@ -1,5 +1,6 @@
 import { ProductGrid } from "@/components/ProductGrid";
 import { getProducts } from "@/server/products";
+import { getCurrentUser } from "@/utils/auth";
 
 export default async function CategoryPage({
   params,
@@ -7,7 +8,16 @@ export default async function CategoryPage({
   params: Promise<{ name: string }>;
 }) {
   const { name } = await params;
-  const products = await getProducts({ categoryName: name });
+  const [products, currentUser] = await Promise.all([
+    getProducts({ categoryName: name }),
+    getCurrentUser(),
+  ]);
 
-  return <ProductGrid products={products} selectedCategory={name} />;
+  return (
+    <ProductGrid
+      currentUser={currentUser}
+      products={products}
+      selectedCategory={name}
+    />
+  );
 }

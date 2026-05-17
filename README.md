@@ -1,260 +1,441 @@
-# Assignment 2 - Blog - Client App
+# Threadline B2C Clothing Store
 
-The goal of this assignment is to implement all the client side functionality.
-Example implementation is in the image below.
+## Project Overview
+
+Threadline is a B2C clothing store prototype built for the COMP3036-FS major project. The application provides a customer storefront for browsing second-hand inspired clothing products and a separate admin interface for basic product management.
+
+This repository is focused only on the B2C clothing store project. It was adapted from a previous assignment codebase, while the old blog application is preserved separately.
+
+The current Iteration 1 version is a semi-functional working prototype. It supports product browsing, category filtering, search, customer authentication, local cart management, mock checkout, admin authentication, and basic admin create/edit product workflows backed by PostgreSQL and Prisma.
 
 ## Success Criteria
 
-- ✅ All of the tests must be passing
-- ✅ You must be able to explain any code in the codebase
+- Customers can browse seeded clothing products from PostgreSQL.
+- Customers can search and filter products by category.
+- Customers can register, log in, log out, and view their session state.
+- Customers can add products to a local cart, update quantities, remove items, and see cart count/total updates.
+- Customers can complete a frontend mock checkout flow and see an order confirmation screen.
+- Admin users can log in with JWT-based authentication.
+- Admin users can view, create, and edit products.
+- Seeded product data includes realistic clothing descriptions, sizing notes, stock, categories, and matching public image URLs.
+- E2E tests verify the main customer and admin flows.
+- GitHub Actions runs database setup, seed, lint, build/test workflow automatically.
 
-## 👾 Requirements - Assignment 2.1 - Client
+## Current Features
 
-> 💡Idea! Create a new issue in your repository, where you can track the completion of these items. Just copy paste them into the issue and mark them as complete as you go. Make sure you copy the source from README.md not the preview text.
+### Storefront
 
-### HOME SCREEN
+- Product grid with name, description, price, stock, category, and image.
+- Featured product section.
+- Category filtering for Jackets, Hoodies, Pants, and Accessories.
+- Product search across product names, descriptions, and categories.
+- Cart stored in `localStorage`.
+- Cart page with product images, quantities, subtotals, remove controls, and order total.
+- Mock checkout page for logged-in customers.
+- Order confirmation page that clears the local cart after mock payment.
+- Purchase history placeholder page for future backend order records.
+- Cart count and total update when products are added, removed, or updated.
+- Customer registration, login, logout, and current-user session endpoint.
+- Responsive UI built with Tailwind CSS.
 
-- [ ] User must see only the "active" posts
-- [ ] User must see the list of blog post categories, where each category points to UI showing only posts of that category
-- [ ] User must see the list of blog post tags, where each tag points to UI showing only posts of that category
-- [ ] User must see the history of blog posts, showing month and year, where each moth, year tuple points to UI showing only posts of that category
-- [ ] Tags and history items shown are only considered from active posts
-- [ ] The list shows the following items:
-  - blog title, pointing to detail page
-  - short description
-  - date
-  - image
-  - tags
-  - likes
-  - views
-- [ ] User must be able to switch between dark and light theme with a button
-      The dark theme setting is stored in the "data-theme" attribute on html element
-- [ ] There is a search functionality that filters blogs based on string found in title or description, redirecting to search page
+### Admin
 
-### DETAIL SCREEN
+- JWT-protected admin login.
+- Admin product list.
+- Product creation page.
+- Product edit page.
+- Product image URL validation and preview.
 
-- [ ] Detail page shows the same items as list item, but the short description is replaced by formatted long description
-- [ ] Detail text is stored as Markdown, which needs to be converted to HTML
+### Database
 
-### CATEGORY SCREEN
+- PostgreSQL database.
+- Prisma schema and migrations.
+- Seeded categories and products.
+- Product stock remains a simple quantity field.
+- Clothing sizing information is stored in product descriptions, not as separate size variants.
 
-- [ ] Displays posts from the category from url (e.g. /category/react)
-- [ ] Displays "0 Posts" when search does no posts have that category
+### Testing
 
-### HISTORY SCREEN
+- 18 passing Playwright E2E tests.
+- Tests cover customer auth, search, category filtering, cart count, cart page behavior, mock checkout, admin login, admin product list, and opening the edit product page.
+- Web unit seed-data test with Vitest.
+- CI runs tests automatically.
 
-- [ ] Displays posts from year and month specified in the url (e.g. /history/2024/12)
-- [ ] Displays "0 Posts" when no posts are from that given month and year
+## Iteration 1 Status
 
-### TAG SCREEN
+Iteration 1 is complete as a semi-functional prototype.
 
-- [ ] Displays posts with the tag url (e.g. /tags/dev-tools)
-- [ ] Displays "0 Posts" when search does no posts have that tag
+Completed:
 
-### SEARCH SCREEN
+- Storefront browsing/search/filtering.
+- Cart page, cart count, and local cart interaction.
+- Frontend mock checkout and order confirmation.
+- Purchase history placeholder page.
+- Customer registration/login/logout.
+- Admin JWT login.
+- Admin product list.
+- Admin create/edit product pages.
+- PostgreSQL and Prisma integration.
+- Prisma seed data for categories and products.
+- Playwright E2E coverage for core flows.
+- GitHub Actions CI with PostgreSQL service, migration, seed, lint, and tests.
 
-- [ ] Displays results based on search string stored in the query string (e.g. /search?q=Fat)
-- [ ] Displays "0 Posts" when search does not find anything
+Not completed yet:
 
-## 👾 Requirements - Assignment 2.2 - Admin
+- Persistent checkout/order storage.
+- Payment is currently a mock prototype flow; no real Stripe/PayPal integration is planned unless required.
+- Database-backed purchase history.
+- Admin purchase/order records.
+- Product delete workflow.
+- Persistent customer cart records.
+- Production deployment.
 
-> 💡Idea! Create a new issue in your repository, where you can track the completion of these items. Just copy paste them into the issue and mark them as complete as you go. Make sure you copy the source from README.md not the preview text.
+## Remaining Work for Iteration 2/Final
 
-### ADMIN HOME SCREEN
+- Implement database-backed order creation after mock checkout.
+- Add persisted purchase history for customers.
+- Add admin order/purchase management.
+- Keep payment as a mock prototype flow unless the final marking requirements ask for a real provider.
+- Add product deletion if required by final scope.
+- Improve cart persistence beyond `localStorage`.
+- Add richer validation and error states for product/admin forms.
+- Deploy the web and admin applications.
+- Record and link the final demo video.
 
-- [ ] Shows Login screen if not logged
-- [ ] Shows List screen if logged
-- [ ] There must be a logout button
-- [ ] Clicking the logout button logs the user out
-- [ ] Authenticate the current client using a hard-coded password
-- [ ] Use a httpOnly cookie and name it "auth_token" to remember the signed-in state.
+## Tech Stack
 
-### ADMIN LIST SCREEN
+- Next.js App Router
+- React
+- TypeScript
+- Tailwind CSS
+- Prisma
+- PostgreSQL
+- JWT authentication
+- Playwright E2E tests
+- Vitest unit tests
+- pnpm Turbo monorepo
+- GitHub Actions CI
 
-- [ ] Shows both active and inactive posts
-- [ ] Article list is only accessible to logged-in users.
-- [ ] There is a filter screen that allows filtering posts by:
-  - [ ] Title or content
-  - [ ] Tags
-  - [ ] Date
-  - [ ] Visibility
-- [ ] You can combine multiple filters
-- [ ] Users can sort posts by name or creation date, both ascending and descending
-- [ ] The post list displays a list of filtered items with the following information:
-  - [ ] The list post item displays the image, title of the post
-  - [ ] The list post items display metadata such as category, tags, and "active" status.
-  - [ ] The active status is a button that, on click, just displays a message
-- [ ] Clicking on the title takes the user to the MODIFY SCREEN, allowing the user to modify the current post
-- [ ] There is a button to create new posts
-- [ ] Clicking on the "Create Post" button takes the user to the CREATE SCREEN
+## Setup Instructions
 
-### ADMIN CREATE and UPDATE screen
+Install dependencies from the repository root:
 
-Both create and update screens display the same UI, but the update screen preloads the data into fields.
-
-- [ ] Page is only accessible to logged in user
-- [ ] There must be the following fields which must be validated for errors:
-  - [ ] Title (`input, string`)
-  - [ ] Description (textarea, string, max 200 characters)
-  - [ ] Content (`textarea, markdown string`)
-  - [ ] Tag List (`input, string`) shows a comma-separated list of tags.
-  - [ ] Image URL (`input, URL`)
-- [ ] Under the Description is a "Preview" button that replaces the text area with a rendered markdown string and changes the title to "Close Preview".
-- [ ] When the preview is closed, the cursor must be in the same position as before opening the preview.
-- [ ] Under the image input is an image preview.
-- [ ] User can click on the "Save" button that displays an error ui if one of the fields is not specified or valid.
-
-## 👾 Requirements: Assignment 2.3
-
-### BACKEND / CLIENT
-
-- [ ] Data is loaded from the database backend
-- [ ] Data filtering is done server side and only filtered data is sent to client
-- [ ] Each visit of the page increases the post "views" count by one
-- [ ] User can "like" the post on the detail screen, NOT on the list screen (hint, create the `/api/likes/route.ts` route and implement the needed handlers)
-- [ ] Liking the post increases the like count by one
-- [ ] User can like the post only once (use IP)
-- [ ] User can unlike the post, decreasing the like post by one
-
-### BACKEND / ADMIN / AUTHORISATION
-
-> For these two requirements we do not have End 2 End tests and will be checked manually.
-
-- [ ] The password is checked on server in the `/api/auth` route
-- [ ] The POST method is used for login
-- [ ] The DELETE method is used for logout
-- [ ] The admin home page checks for the presence of JWT token and verifies it, if the token does not exist or is invalid, displays the login control.
-
-### BACKEND / ADMIN / LIST SCREEN
-
-- [ ] Logged in user can activate / deactivate a post clicking on the activate button, automatically saving changes
-
-### BACKEND / ADMIN / UPDATE SCREEN
-
-- [ ] Logged in user can save changes to database, if the form is validated
-
-### BACKEND / ADMIN / CREATE SCREEN
-
-- [ ] Logged in user can create a new post to the database, if the form is validated
-
-## Prerequisites
-
-First, make sure that "pnpm" and "turbo" is installed in your computer. If not, please follow installation instructions for pnpm. If turbo is not installed, please install it using pnpm with the following command:
-
-Then, run the following command to install turborepo.
-
-```
-pnpm add -g turbo
+```bash
+pnpm install
 ```
 
-## Installing the project
+Install Playwright browsers if they are not already installed:
 
-Once the pnpm is installed, in the root of the project install the packages
-
-```
-pnpm i
-```
-
-To run end to end tests you need to install headless browsers. Please run the following command in the `tests/playwright-web` directory
-
-```
-pnpx playwright install
+```bash
+cd tests/playwright
+pnpm playwright install
+cd ../..
 ```
 
-## Environment
+## Environment Variables
 
-In all packages `apps/admin` and `packages/db` find `.env.example` files and copy them to `.env`. Set your environment variables accordingly!
+Create `.env` files from the provided `.env.example` files where required. At minimum, the database package and apps need access to the database URL and JWT secret.
 
-## Running the project
+Example:
 
-To run the project, run the following command in the root directory of your project:
-
-```
-turbo dev
-```
-
-This will run:
-
-- Client application at [http://localhost:3001](http://localhost:3001)
-- Admin application at [http://localhost:3002](http://localhost:3002)
-
-## Running tests
-
-To run the tests please run, you have two options.
-
-### Running Tests in Console
-
-If you only wish to visualise the test results in console, please run the following command in the root of your project for the first part of the second assignment (i.e. Assignment 2.1):
-
-```
-turbo test-1
+```env
+DATABASE_URL="postgresql://YOUR_USERNAME@localhost:5432/threadline_store?schema=public"
+JWT_SECRET="your-secret-key"
+PASSWORD="123"
 ```
 
-This launches the turbo console UI similar to below, where you can swap between different projects:
+Notes:
 
-![Turbo UI](https://skillpies.s3.ap-southeast-2.amazonaws.com/courses/full-stack-development/sections/assignment-2-1-blog-client-in-advanced-react/Screenshot%202025-02-05%20at%2014.30.45.png)
+- `DATABASE_URL` is used by Prisma and the Next.js apps.
+- `JWT_SECRET` is used for customer/admin token signing.
+- `PASSWORD` is used by the admin login prototype.
 
-> ⚠️⚠️ Make sure that ALL tests pass!
+## Database Setup
 
-If you want to run the tests for second part (i.e. Assignment 2.2) or third part (i.e. Assignment 2.3), run these commands:
+Start PostgreSQL:
 
-```
-turbo test-2 // or
-turbo test-3
-```
-
-If you want to run all tests, please run
-
-```
-turbo all:test
+```bash
+brew services start postgresql@16
 ```
 
-### Running Tests in UIs
+Create the local database:
 
-The packaged tests framework also have the possibility of visually represent your tests for nicer view of test results. To see the UIs, run this command instead of `turbo test-1`:
-
-```
-turbo dev:test-1
+```bash
+createdb threadline_store
 ```
 
-This will launch the End to End testing framework Playwright's test UI similar to below, please use the Play buttons to run individual tests:
+Run Prisma migrations:
 
-![Playwright UI](https://skillpies.s3.ap-southeast-2.amazonaws.com/courses/full-stack-development/sections/assignment-2-1-blog-client-in-advanced-react/Screenshot%202025-02-05%20at%2014.40.35.png)
+```bash
+npx prisma migrate dev --schema=packages/db/prisma/schema.prisma
+```
 
-It also launches the unit and integration test framework Vitest's UI, similar to below. Here, you can also use the play buttons to execute individual tests!
+Seed the store data:
 
-![Vitest UI](https://skillpies.s3.ap-southeast-2.amazonaws.com/courses/full-stack-development/sections/assignment-2-1-blog-client-in-advanced-react/Screenshot%202025-02-05%20at%2014.46.31.png)
+```bash
+pnpm --filter @repo/db db:seed
+```
 
-## Project structure
+The seed uses Prisma `upsert` for the fixed seeded products, so reseeding updates existing product names, descriptions, images, prices, stock, and categories instead of duplicating them.
 
-The project is monorepo with the following packages split into three categories:
+## Running the Project
 
-**Applications**
+Start both applications from the repository root:
 
-Contains the following web applications:
+```bash
+pnpm turbo dev
+```
 
-- **apps/admin** - Admin Website
-- **apps/web** - Client website
+Local URLs:
 
-**Packages**
+- Web storefront: [http://localhost:3001](http://localhost:3001)
+- Admin app: [http://localhost:3002](http://localhost:3002)
 
-Contains the following packages with shared code and configurations:
+## Running Tests
 
-- **packages/ui** - Library of UI elements shared between admin and client
-- **packages/utils** - Library of utility functions shared between other projects
-- **packages/db** - Library handling the database connection
-- **packages/eslint-config**, **packages/tailwind-config** and **packages/typescript-config** contain configuration files for build pipelines for this project
+Run the full Turbo test pipeline:
 
-**Tests**
+```bash
+pnpm turbo test
+```
 
-Contains the following test applications:
+Run a production build:
 
-- **tests/playwright-admin** - End to End tests for the admin application
-- **tests/playwright-web** - End to End tests for the client application
-- **tests/storybook** - Configured storybook instance for development and testing of React components in isolation
+```bash
+pnpm turbo build
+```
 
-## Application Structure
+Run Playwright E2E tests directly:
 
-The client application comes with pre-defined router (only one route is missing for your learning).
-The client application also comes with pre defined structure of components and utilities for you to complete.
-Tha admin application is much more bare with most functionality AND structure needed to be completed by you.
+```bash
+pnpm --filter @repo/playwright exec playwright test
+```
+
+Current E2E status:
+
+- 18 Playwright tests passing.
+- Coverage includes auth, search, filtering, cart count, cart page loading, add/remove cart behavior, checkout login redirect, logged-in checkout access, mock order confirmation, admin login, admin product list, and admin edit-page access.
+
+If a dev server is already running on ports `3001` or `3002`, stop it before running the Playwright command that starts its own servers.
+
+## CI Pipeline
+
+GitHub Actions is configured in `.github/workflows/ci.yml`.
+
+The CI workflow:
+
+- Starts a PostgreSQL 16 service.
+- Installs dependencies with pnpm.
+- Generates Prisma Client.
+- Applies Prisma migrations.
+- Seeds the database.
+- Runs web and admin lint checks.
+- Installs the Playwright Chromium browser.
+- Runs `pnpm turbo test`.
+
+## API Documentation
+
+Only currently implemented API routes are listed here.
+
+### Web App API
+
+#### `POST /api/register`
+
+Registers a customer account.
+
+Request body:
+
+```json
+{
+  "name": "Test User",
+  "email": "user@example.com",
+  "password": "password123",
+  "confirmPassword": "password123"
+}
+```
+
+Responses:
+
+- `201` with `{ "success": true }`
+- `400` for missing fields or password mismatch
+- `409` when the email already exists
+
+#### `POST /api/login`
+
+Logs in a customer and sets an auth cookie.
+
+Request body:
+
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+Responses:
+
+- `200` with `{ "success": true, "user": ... }`
+- `400` for missing fields
+- `401` for invalid credentials
+
+#### `DELETE /api/logout`
+
+Logs out the current customer by clearing the auth cookie.
+
+Response:
+
+- `200` with `{ "success": true }`
+
+#### `GET /api/me`
+
+Returns the current customer session.
+
+Response:
+
+```json
+{
+  "user": null
+}
+```
+
+or a logged-in user object.
+
+#### `GET /api/seed`
+
+Runs the seed function and returns `{ "message": "Seeded" }`. This exists for development/test support.
+
+### Admin App API
+
+#### `POST /api/auth`
+
+Logs in an admin user using the configured `PASSWORD` and sets an auth cookie.
+
+Request body for JSON requests:
+
+```json
+{
+  "password": "123"
+}
+```
+
+Responses:
+
+- `200` with `{ "success": true }` for JSON requests
+- `303` redirect for form submissions
+- `400` for invalid JSON requests
+- `401` for invalid password
+
+#### `DELETE /api/auth`
+
+Logs out the admin user by clearing the auth cookie.
+
+Response:
+
+- `200` with `{ "success": true }`
+
+#### `POST /api/products`
+
+Creates a product. Requires admin authentication.
+
+Request body:
+
+```json
+{
+  "name": "Example Jacket",
+  "description": "Size: M. Fit: relaxed. Condition: Used - Good.",
+  "image": "https://images.unsplash.com/example",
+  "category": "Jackets",
+  "price": 100,
+  "stock": 5
+}
+```
+
+Responses:
+
+- `201` with created product id/name
+- `400` for invalid product data
+- `401` for unauthenticated requests
+
+#### `PATCH /api/products/[id]`
+
+Updates a product. Requires admin authentication.
+
+Request body:
+
+```json
+{
+  "name": "Updated Jacket",
+  "description": "Size: M. Fit: relaxed. Condition: Used - Very Good.",
+  "image": "https://images.unsplash.com/example",
+  "category": "Jackets",
+  "price": 120,
+  "stock": 4
+}
+```
+
+Responses:
+
+- `200` with updated product id/name
+- `400` for invalid product id or product data
+- `401` for unauthenticated requests
+
+### Planned API Work
+
+The following API areas are planned for Iteration 2/final and are not implemented yet:
+
+- Database-backed checkout/order creation.
+- Customer purchase history backed by stored order records.
+- Admin purchase/order records.
+- Product delete endpoint.
+
+## Project Structure
+
+```text
+apps/
+  web/              Customer storefront application
+  admin/            Admin product management application
+packages/
+  db/               Prisma schema, client, seed data, and database helpers
+  env/              Shared environment validation
+  ui/               Shared UI package
+  utils/            Shared utility functions
+  eslint-config/    Shared ESLint configuration
+  tailwind-config/  Shared Tailwind configuration
+  typescript-config/ Shared TypeScript configuration
+tests/
+  playwright/       End-to-end tests for web and admin apps
+  storybook/        Storybook test/development package
+.github/
+  workflows/        GitHub Actions CI configuration
+```
+
+## Deployment
+
+Production deployment is planned for the final submission. The applications are currently verified locally and through GitHub Actions CI.
+
+Deployment requirements for final:
+
+- Hosted PostgreSQL database.
+- Production `DATABASE_URL`.
+- Production `JWT_SECRET`.
+- Secure admin password configuration.
+- Hosted web and admin Next.js applications.
+- Prisma migrations applied in the deployment environment.
+
+## Demo Video
+
+Demo video is planned for the final submission.
+
+The final demo should show:
+
+- Customer browsing, filtering, and searching.
+- Customer registration/login/logout.
+- Adding products to the cart.
+- Updating/removing cart items.
+- Completing the mock checkout flow.
+- Viewing the order confirmation and purchase history placeholder.
+- Admin login.
+- Admin product list.
+- Product creation/editing.
+- E2E tests or CI status.

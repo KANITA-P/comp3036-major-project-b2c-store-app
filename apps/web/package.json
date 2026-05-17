@@ -9,15 +9,16 @@
     "start": "next start",
     "lint": "next lint --max-warnings 0",
     "check-types": "tsc --noEmit",
-    "test": "vitest --browser.headless",
+    "test": "vitest run --browser.headless",
     "dev:test": "vitest"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
-    "@repo/ui": "workspace:*",
     "@repo/db": "workspace:*",
+    "@repo/ui": "workspace:*",
     "@repo/utils": "workspace:*",
     "@tailwindcss/postcss": "^4.0.0",
+    "bcryptjs": "^3.0.3",
     "marked": "^15.0.6",
     "next": "^15.1.6",
     "postcss": "^8.5.1",
