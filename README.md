@@ -6,14 +6,15 @@ Threadline is a B2C clothing store prototype built for the COMP3036-FS major pro
 
 This repository is focused only on the B2C clothing store project. It was adapted from a previous assignment codebase, while the old blog application is preserved separately.
 
-The current Iteration 1 version is a semi-functional working prototype. It supports product browsing, category filtering, search, cart count interaction, customer authentication, admin authentication, and basic admin create/edit product workflows backed by PostgreSQL and Prisma.
+The current Iteration 1 version is a semi-functional working prototype. It supports product browsing, category filtering, search, customer authentication, local cart management, mock checkout, admin authentication, and basic admin create/edit product workflows backed by PostgreSQL and Prisma.
 
 ## Success Criteria
 
 - Customers can browse seeded clothing products from PostgreSQL.
 - Customers can search and filter products by category.
 - Customers can register, log in, log out, and view their session state.
-- Customers can add products to a local cart preview and see cart count/total updates.
+- Customers can add products to a local cart, update quantities, remove items, and see cart count/total updates.
+- Customers can complete a frontend mock checkout flow and see an order confirmation screen.
 - Admin users can log in with JWT-based authentication.
 - Admin users can view, create, and edit products.
 - Seeded product data includes realistic clothing descriptions, sizing notes, stock, categories, and matching public image URLs.
@@ -28,8 +29,12 @@ The current Iteration 1 version is a semi-functional working prototype. It suppo
 - Featured product section.
 - Category filtering for Jackets, Hoodies, Pants, and Accessories.
 - Product search across product names, descriptions, and categories.
-- Cart preview stored in `localStorage`.
-- Cart count and total update when products are added.
+- Cart stored in `localStorage`.
+- Cart page with product images, quantities, subtotals, remove controls, and order total.
+- Mock checkout page for logged-in customers.
+- Order confirmation page that clears the local cart after mock payment.
+- Purchase history placeholder page for future backend order records.
+- Cart count and total update when products are added, removed, or updated.
 - Customer registration, login, logout, and current-user session endpoint.
 - Responsive UI built with Tailwind CSS.
 
@@ -51,8 +56,8 @@ The current Iteration 1 version is a semi-functional working prototype. It suppo
 
 ### Testing
 
-- 12 passing Playwright E2E tests.
-- Tests cover customer auth, search, category filtering, cart count, admin login, admin product list, and opening the edit product page.
+- 18 passing Playwright E2E tests.
+- Tests cover customer auth, search, category filtering, cart count, cart page behavior, mock checkout, admin login, admin product list, and opening the edit product page.
 - Web unit seed-data test with Vitest.
 - CI runs tests automatically.
 
@@ -63,7 +68,9 @@ Iteration 1 is complete as a semi-functional prototype.
 Completed:
 
 - Storefront browsing/search/filtering.
-- Cart count and local cart preview interaction.
+- Cart page, cart count, and local cart interaction.
+- Frontend mock checkout and order confirmation.
+- Purchase history placeholder page.
 - Customer registration/login/logout.
 - Admin JWT login.
 - Admin product list.
@@ -75,8 +82,9 @@ Completed:
 
 Not completed yet:
 
-- Checkout/payment.
-- Purchase history.
+- Persistent checkout/order storage.
+- Payment is currently a mock prototype flow; no real Stripe/PayPal integration is planned unless required.
+- Database-backed purchase history.
 - Admin purchase/order records.
 - Product delete workflow.
 - Persistent customer cart records.
@@ -84,9 +92,10 @@ Not completed yet:
 
 ## Remaining Work for Iteration 2/Final
 
-- Implement checkout flow and order creation.
-- Add purchase history for customers.
+- Implement database-backed order creation after mock checkout.
+- Add persisted purchase history for customers.
 - Add admin order/purchase management.
+- Keep payment as a mock prototype flow unless the final marking requirements ask for a real provider.
 - Add product deletion if required by final scope.
 - Improve cart persistence beyond `localStorage`.
 - Add richer validation and error states for product/admin forms.
@@ -204,8 +213,8 @@ pnpm --filter @repo/playwright exec playwright test
 
 Current E2E status:
 
-- 12 Playwright tests passing.
-- Coverage includes auth, search, filtering, cart count, admin login, admin product list, and admin edit-page access.
+- 18 Playwright tests passing.
+- Coverage includes auth, search, filtering, cart count, cart page loading, add/remove cart behavior, checkout login redirect, logged-in checkout access, mock order confirmation, admin login, admin product list, and admin edit-page access.
 
 If a dev server is already running on ports `3001` or `3002`, stop it before running the Playwright command that starts its own servers.
 
@@ -375,8 +384,8 @@ Responses:
 
 The following API areas are planned for Iteration 2/final and are not implemented yet:
 
-- Checkout/order creation.
-- Customer purchase history.
+- Database-backed checkout/order creation.
+- Customer purchase history backed by stored order records.
 - Admin purchase/order records.
 - Product delete endpoint.
 
@@ -422,7 +431,10 @@ The final demo should show:
 
 - Customer browsing, filtering, and searching.
 - Customer registration/login/logout.
-- Adding products to the cart preview.
+- Adding products to the cart.
+- Updating/removing cart items.
+- Completing the mock checkout flow.
+- Viewing the order confirmation and purchase history placeholder.
 - Admin login.
 - Admin product list.
 - Product creation/editing.
