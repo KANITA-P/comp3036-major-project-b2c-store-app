@@ -5,13 +5,16 @@
 import { useEffect, useMemo, useState } from "react";
 import type { StoreProduct } from "@/server/products";
 import type { CustomerSession } from "@/utils/auth";
+import {
+  type CartLine,
+  getCartCount,
+  getCartTotal,
+  readCart,
+  writeCart,
+} from "@/utils/cart";
 import { CategoryFilter } from "./CategoryFilter";
 import { Navbar } from "./Navbar";
 import { handleProductImageError, ProductCard } from "./ProductCard";
-
-type CartLine = StoreProduct & {
-  quantity: number;
-};
 
 export function ProductGrid({
   products,
@@ -25,25 +28,11 @@ export function ProductGrid({
   const [cart, setCart] = useState<CartLine[]>([]);
 
   useEffect(() => {
-    const storedCart = window.localStorage.getItem("threadline-cart");
-    if (!storedCart) return;
-
-    try {
-      setCart(JSON.parse(storedCart) as CartLine[]);
-    } catch {
-      window.localStorage.removeItem("threadline-cart");
-    }
+    setCart(readCart());
   }, []);
 
-  useEffect(() => {
-    window.localStorage.setItem("threadline-cart", JSON.stringify(cart));
-  }, [cart]);
-
-  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-  const cartTotal = cart.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0,
-  );
+  const cartCount = getCartCount(cart);
+  const cartTotal = getCartTotal(cart);
 
   const featuredProduct = products[0];
   const stockedProducts = useMemo(
@@ -52,22 +41,22 @@ export function ProductGrid({
   );
 
   function addToCart(product: StoreProduct) {
-    setCart((current) => {
-      const existing = current.find((item) => item.id === product.id);
-
-      if (existing) {
-        return current.map((item) =>
+    const currentCart = readCart();
+    const existing = currentCart.find((item) => item.id === product.id);
+    const nextCart = existing
+      ? currentCart.map((item) =>
           item.id === product.id
             ? { ...item, quantity: Math.min(item.quantity + 1, product.stock) }
             : item,
-        );
-      }
+        )
+      : [...currentCart, { ...product, quantity: 1 }];
 
-      return [...current, { ...product, quantity: 1 }];
-    });
+    writeCart(nextCart);
+    setCart(nextCart);
   }
 
   function clearCart() {
+    writeCart([]);
     setCart([]);
   }
 
@@ -87,7 +76,7 @@ export function ProductGrid({
             <p className="mt-5 max-w-2xl text-lg leading-8 text-neutral-600">
               Jackets, hoodies, pants, and accessories selected for a practical
               streetwear prototype. Browse the collection and build a quick local
-              cart without checkout.
+              cart with mock checkout.
             </p>
             <div className="mt-8">
               <CategoryFilter selectedCategory={selectedCategory} />

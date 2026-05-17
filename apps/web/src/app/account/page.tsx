@@ -32,10 +32,16 @@ export default async function AccountPage() {
 
         <div className="mt-8 flex flex-wrap items-center gap-4">
           <Link
-            className="inline-flex h-10 items-center rounded-full bg-neutral-950 px-5 text-sm font-bold text-white transition hover:bg-neutral-700"
+            className="inline-flex h-10 items-center rounded-full border border-neutral-300 bg-neutral-200 px-5 text-sm font-bold text-neutral-950 transition hover:bg-neutral-300"
             href="/"
           >
             Back to store
+          </Link>
+          <Link
+            className="inline-flex h-10 items-center rounded-full border border-neutral-200 px-5 text-sm font-bold text-neutral-700 transition hover:border-neutral-950 hover:text-neutral-950"
+            href="/account/orders"
+          >
+            View orders
           </Link>
           <LogoutButton />
         </div>

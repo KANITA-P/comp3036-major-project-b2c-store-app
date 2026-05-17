@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
+import { useEffect, useState } from "react";
 import { LogoutButton } from "@/app/logout-button";
 import type { CustomerSession } from "@/utils/auth";
+import { CART_UPDATED_EVENT, getCartCount, readCart } from "@/utils/cart";
 import { CartButton } from "./CartButton";
 
 export function Navbar({
@@ -15,6 +17,22 @@ export function Navbar({
   currentUser: CustomerSession | null;
 }) {
   const router = useRouter();
+  const [displayCartCount, setDisplayCartCount] = useState(cartCount);
+
+  useEffect(() => {
+    function syncCartCount() {
+      setDisplayCartCount(getCartCount(readCart()));
+    }
+
+    syncCartCount();
+    window.addEventListener(CART_UPDATED_EVENT, syncCartCount);
+    window.addEventListener("storage", syncCartCount);
+
+    return () => {
+      window.removeEventListener(CART_UPDATED_EVENT, syncCartCount);
+      window.removeEventListener("storage", syncCartCount);
+    };
+  }, []);
 
   function handleSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -62,6 +80,12 @@ export function Navbar({
               >
                 Account
               </Link>
+              <Link
+                className="hidden text-sm font-medium text-neutral-600 hover:text-neutral-950 sm:inline"
+                href="/account/orders"
+              >
+                Orders
+              </Link>
               <LogoutButton />
             </>
           ) : (
@@ -80,7 +104,7 @@ export function Navbar({
               </Link>
             </div>
           )}
-          <CartButton count={cartCount} />
+          <CartButton count={displayCartCount} />
         </div>
       </div>
       <div className="flex items-center justify-center gap-4 border-t border-neutral-200 px-5 py-3 sm:hidden">
@@ -91,6 +115,12 @@ export function Navbar({
               href="/account"
             >
               Account
+            </Link>
+            <Link
+              className="text-sm font-medium text-neutral-600 hover:text-neutral-950"
+              href="/account/orders"
+            >
+              Orders
             </Link>
             <LogoutButton />
           </>
