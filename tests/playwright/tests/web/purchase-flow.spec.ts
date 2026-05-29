@@ -38,15 +38,24 @@ async function registerAndLogin(page: import("@playwright/test").Page) {
   await page.getByLabel("Password").fill(testPassword);
   await page.getByRole("button", { name: "Login" }).click();
   await expect(page).toHaveURL("/");
+
+  return email;
 }
 
-async function addStormlineJacket(page: import("@playwright/test").Page) {
+async function addProductToCart(
+  page: import("@playwright/test").Page,
+  productName: string,
+) {
   await page.goto("/");
   await page
     .getByTestId("product-card")
-    .filter({ hasText: "Stormline Shell Jacket" })
+    .filter({ hasText: productName })
     .getByRole("button", { name: "Add to Cart" })
     .click();
+}
+
+async function addStormlineJacket(page: import("@playwright/test").Page) {
+  await addProductToCart(page, "Stormline Shell Jacket");
 }
 
 test.describe("Customer purchase flow", () => {
@@ -207,6 +216,78 @@ test.describe("Customer purchase flow", () => {
     await expect(
       page.getByText("Full name and delivery address are required."),
     ).toBeVisible();
+  });
+
+  test("mock checkout supports multiple cart items", async ({ page }) => {
+    const email = await registerAndLogin(page);
+    await addProductToCart(page, "Stormline Shell Jacket");
+    await addProductToCart(page, "Rib Knit Beanie");
+    await page.goto("/checkout");
+
+    const summary = page.getByLabel("Checkout order summary");
+
+    await expect(summary).toContainText("Stormline Shell Jacket");
+    await expect(summary).toContainText("Rib Knit Beanie");
+    await expect(summary).toContainText("$223.00");
+
+    await page.getByLabel("Delivery address").fill("456 Multi Item Lane");
+    await page.getByRole("button", { name: "Place Order" }).click();
+
+    await expect(page).toHaveURL(/\/order-confirmation$/);
+    await expect(page.getByTestId("cart-button")).toContainText("0");
+
+    const order = await client.db.order.findFirst({
+      where: {
+        user: {
+          email,
+        },
+      },
+      include: {
+        items: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    expect(order).not.toBeNull();
+    expect(Number(order?.totalAmount)).toBe(223);
+    expect(order?.items).toHaveLength(2);
+    expect(order?.items.map((item) => item.productName).sort()).toEqual([
+      "Rib Knit Beanie",
+      "Stormline Shell Jacket",
+    ]);
+  });
+
+  test("checkout API rejects an empty cart body", async ({ page }) => {
+    await registerAndLogin(page);
+
+    const response = await page.request.post("/api/orders", {
+      data: {},
+    });
+    const body = await response.json();
+
+    expect(response.status()).toBe(400);
+    expect(body.error).toBe("Cart is empty");
+  });
+
+  test("checkout API rejects invalid product IDs", async ({ page }) => {
+    await registerAndLogin(page);
+
+    const response = await page.request.post("/api/orders", {
+      data: {
+        items: [
+          {
+            productId: 999999,
+            quantity: 1,
+          },
+        ],
+      },
+    });
+    const body = await response.json();
+
+    expect(response.status()).toBe(400);
+    expect(body.error).toBe("Invalid cart product");
   });
 
   test("mock place order clears cart and shows confirmation", async ({
