@@ -51,6 +51,80 @@ test.describe("B2C store homepage", () => {
     await expect(
       card.getByRole("button", { name: "Add to Cart" }),
     ).toBeEnabled();
+    await expect(
+      card.getByRole("link", { name: "Stormline Shell Jacket", exact: true }),
+    ).toBeVisible();
+    await expect(
+      card.getByRole("link", { name: "View Stormline Shell Jacket" }),
+    ).toBeVisible();
+  });
+
+  test("opens product detail page from a product card", async ({ page }) => {
+    await page.goto("/");
+
+    const productLink = page
+      .getByTestId("product-card")
+      .filter({ hasText: "Stormline Shell Jacket" })
+      .getByRole("link", { name: "Stormline Shell Jacket", exact: true });
+
+    await Promise.all([
+      page.waitForURL(/\/product\/\d+$/),
+      productLink.click(),
+    ]);
+
+    await expect(page).toHaveURL(/\/product\/\d+$/);
+
+    const detail = page.getByTestId("product-detail");
+
+    await expect(
+      detail.getByRole("img", { name: "Stormline Shell Jacket" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Stormline Shell Jacket" }),
+    ).toBeVisible();
+    await expect(detail).toContainText("Size: M. Fit: relaxed shell fit");
+    await expect(detail).toContainText("$189.00");
+    await expect(detail).toContainText("12 in stock");
+    await expect(detail).toContainText("Jackets");
+    await expect(
+      page.getByRole("link", { name: "Back to shop" }),
+    ).toBeVisible();
+  });
+
+  test("add to cart from product detail updates cart count", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const productLink = page
+      .getByTestId("product-card")
+      .filter({ hasText: "Stormline Shell Jacket" })
+      .getByRole("link", { name: "Stormline Shell Jacket", exact: true });
+
+    await Promise.all([
+      page.waitForURL(/\/product\/\d+$/),
+      productLink.click(),
+    ]);
+
+    await expect(page.getByTestId("cart-button")).toContainText("0");
+    await page
+      .getByTestId("product-detail")
+      .getByRole("button", { name: "Add to Cart" })
+      .click();
+
+    await expect(page.getByTestId("cart-button")).toContainText("1");
+  });
+
+  test("invalid product id shows product not found", async ({ page }) => {
+    await page.goto("/product/not-a-real-product");
+
+    await expect(
+      page.getByRole("heading", { name: "Product not found" }),
+    ).toBeVisible();
+    await expect(page.getByText("Product unavailable")).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Back to shop" }),
+    ).toBeVisible();
   });
 
   test("category filters display and filter products", async ({ page }) => {
@@ -141,7 +215,5 @@ test.describe("B2C store homepage", () => {
       page.getByRole("heading", { name: "1 item · $189.00" }),
     ).toBeVisible();
   });
-
-  // TODO: add a product detail page E2E test if a customer-facing product detail route is implemented.
   // TODO: add a broken image fallback layout test if editable storefront images become part of the customer UI.
 });
