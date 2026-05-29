@@ -87,6 +87,63 @@ test.describe("Customer purchase flow", () => {
     await expect(page.getByRole("link", { name: "Checkout" })).toBeVisible();
   });
 
+  test("cart displays product details and quantity controls", async ({
+    page,
+  }) => {
+    await addStormlineJacket(page);
+    await page.goto("/cart");
+
+    const cartLine = page
+      .getByTestId("cart-line")
+      .filter({ hasText: "Stormline Shell Jacket" });
+
+    await expect(
+      cartLine.getByRole("img", { name: "Stormline Shell Jacket" }),
+    ).toBeVisible();
+    await expect(cartLine).toContainText("Jackets");
+    await expect(cartLine).toContainText("Size: M. Fit: relaxed shell fit");
+    await expect(cartLine).toContainText("$189.00");
+    await expect(cartLine.getByLabel("Quantity 1")).toBeVisible();
+    await expect(page.getByLabel("Order summary")).toContainText("Subtotal");
+    await expect(page.getByLabel("Order summary")).toContainText("$189.00");
+
+    await cartLine
+      .getByRole("button", {
+        name: "Increase quantity for Stormline Shell Jacket",
+      })
+      .click();
+
+    await expect(cartLine.getByLabel("Quantity 2")).toBeVisible();
+    await expect(cartLine).toContainText("$378.00");
+
+    await cartLine
+      .getByRole("button", {
+        name: "Decrease quantity for Stormline Shell Jacket",
+      })
+      .click();
+
+    await expect(cartLine.getByLabel("Quantity 1")).toBeVisible();
+  });
+
+  test("cart quantity cannot exceed product stock", async ({ page }) => {
+    await addStormlineJacket(page);
+    await page.goto("/cart");
+
+    const cartLine = page
+      .getByTestId("cart-line")
+      .filter({ hasText: "Stormline Shell Jacket" });
+    const increaseButton = cartLine.getByRole("button", {
+      name: "Increase quantity for Stormline Shell Jacket",
+    });
+
+    for (let count = 1; count < 12; count += 1) {
+      await increaseButton.click();
+    }
+
+    await expect(cartLine.getByLabel("Quantity 12")).toBeVisible();
+    await expect(increaseButton).toBeDisabled();
+  });
+
   test("remove item from cart", async ({ page }) => {
     await addStormlineJacket(page);
     await page.goto("/cart");
@@ -131,6 +188,25 @@ test.describe("Customer purchase flow", () => {
     await expect(page.getByLabel("Full name")).toBeVisible();
     await expect(page.getByLabel("Delivery address")).toBeVisible();
     await expect(page.getByLabel("Payment method")).toBeVisible();
+    await expect(page.getByLabel("Checkout order summary")).toContainText(
+      "Stormline Shell Jacket",
+    );
+    await expect(page.getByLabel("Checkout order summary")).toContainText(
+      "$189.00",
+    );
+  });
+
+  test("mock payment form validates required fields", async ({ page }) => {
+    await registerAndLogin(page);
+    await addStormlineJacket(page);
+    await page.goto("/checkout");
+
+    await page.getByLabel("Full name").fill("");
+    await page.getByRole("button", { name: "Place Order" }).click();
+
+    await expect(
+      page.getByText("Full name and delivery address are required."),
+    ).toBeVisible();
   });
 
   test("mock place order clears cart and shows confirmation", async ({
@@ -176,5 +252,7 @@ test.describe("Customer purchase flow", () => {
       "Stormline Shell Jacket",
     );
     await expect(page.getByTestId("customer-order")).toContainText("CONFIRMED");
+    await expect(page.getByTestId("customer-order")).toContainText("Qty 1");
+    await expect(page.getByTestId("customer-order")).toContainText("$189.00");
   });
 });

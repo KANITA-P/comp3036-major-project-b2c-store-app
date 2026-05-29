@@ -6,6 +6,8 @@ const adminEmail = process.env.ADMIN_EMAIL ?? "admin@threadline.com";
 const adminPassword = process.env.ADMIN_PASSWORD ?? "test-admin-password";
 const customerEmail = `admin-reject-customer-${Date.now()}@example.com`;
 const customerPassword = "Password123";
+const createdProductBaseName = `Playwright Test Jacket ${Date.now()}`;
+const updatedProductName = `${createdProductBaseName} Updated`;
 
 test.beforeAll(async () => {
   await seed();
@@ -15,6 +17,13 @@ test.afterAll(async () => {
   await client.db.user.deleteMany({
     where: {
       email: customerEmail,
+    },
+  });
+  await client.db.product.deleteMany({
+    where: {
+      name: {
+        in: [createdProductBaseName, updatedProductName],
+      },
     },
   });
 });
@@ -145,7 +154,7 @@ test.describe("Admin product management", () => {
     await expect(
       page.getByRole("link", { name: "Create Product" }),
     ).toBeVisible();
-    await expect(page.getByTestId("admin-product-card")).toHaveCount(8);
+    await expect(page.getByTestId("admin-product-card").first()).toBeVisible();
     await expect(
       page.getByTestId("admin-product-card").filter({
         has: page.getByRole("link", { name: "Stormline Shell Jacket" }),
@@ -167,6 +176,59 @@ test.describe("Admin product management", () => {
     await expect(page.getByLabel("Category")).toHaveValue("Pants");
     await expect(page.getByLabel("Price")).toHaveValue("129");
     await expect(page.getByAltText("Preview")).toBeVisible();
+  });
+
+  test("admin can create and update a product", async ({ page }) => {
+    await login(page);
+    await page.getByRole("link", { name: "Create Product" }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "Create Product" }),
+    ).toBeVisible();
+
+    await page.getByLabel("Name").fill(createdProductBaseName);
+    await page.getByLabel("Category").fill("Jackets");
+    await page
+      .getByLabel("Description")
+      .fill("Created by Playwright for product management coverage.");
+    await page
+      .getByLabel("Image URL")
+      .fill("https://example.com/playwright-product.jpg");
+    await page.getByLabel("Price").fill("77");
+    await page.getByLabel("Stock").fill("5");
+    await page.getByRole("button", { name: "Save" }).click();
+
+    await expect(page.getByText("Product saved successfully")).toBeVisible();
+
+    await page.goto("/");
+
+    const createdCard = page
+      .getByTestId("admin-product-card")
+      .filter({ hasText: createdProductBaseName });
+
+    await expect(createdCard).toBeVisible();
+    await expect(createdCard).toContainText("$77.00");
+    await expect(createdCard).toContainText("5 in stock");
+
+    await createdCard
+      .getByRole("link", { name: createdProductBaseName })
+      .click();
+    await page.getByLabel("Name").fill(updatedProductName);
+    await page.getByLabel("Price").fill("88");
+    await page.getByLabel("Stock").fill("6");
+    await page.getByRole("button", { name: "Save" }).click();
+
+    await expect(page.getByText("Product saved successfully")).toBeVisible();
+
+    await page.goto("/");
+
+    const updatedCard = page
+      .getByTestId("admin-product-card")
+      .filter({ hasText: updatedProductName });
+
+    await expect(updatedCard).toBeVisible();
+    await expect(updatedCard).toContainText("$88.00");
+    await expect(updatedCard).toContainText("6 in stock");
   });
 
   test("shows customer purchase records after admin login", async ({
@@ -193,4 +255,6 @@ test.describe("Admin product management", () => {
       "CONFIRMED",
     );
   });
+
+  // TODO: add an admin delete-product E2E test if product deletion is implemented.
 });

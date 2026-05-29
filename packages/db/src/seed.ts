@@ -64,6 +64,10 @@ export async function seed() {
     });
   }
 
+  await client.db.$executeRawUnsafe(
+    `SELECT setval(pg_get_serial_sequence('"Product"', 'id'), COALESCE((SELECT MAX(id) FROM "Product"), 1), true)`,
+  );
+
   await client.db.$transaction([
     client.db.user.upsert({
       where: { email: admin.email },

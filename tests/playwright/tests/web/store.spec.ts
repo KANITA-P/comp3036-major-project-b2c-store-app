@@ -17,35 +17,113 @@ test.describe("B2C store homepage", () => {
     await expect(page.getByRole("link", { name: "Threadline" })).toBeVisible();
     await expect(page.getByTestId("product-card")).toHaveCount(8);
     await expect(
-      page.getByTestId("product-card").filter({ hasText: "Stormline Shell Jacket" }),
+      page
+        .getByTestId("product-card")
+        .filter({ hasText: "Stormline Shell Jacket" }),
     ).toBeVisible();
     await expect(
-      page.getByTestId("product-card").filter({ hasText: "Everyday Heavy Hoodie" }),
+      page
+        .getByTestId("product-card")
+        .filter({ hasText: "Everyday Heavy Hoodie" }),
     ).toBeVisible();
     await expect(
-      page.getByTestId("product-card").filter({ hasText: "Wide Leg Utility Trouser" }),
+      page
+        .getByTestId("product-card")
+        .filter({ hasText: "Wide Leg Utility Trouser" }),
     ).toBeVisible();
   });
 
-  test("filters products by category", async ({ page }) => {
+  test("product cards show product details", async ({ page }) => {
+    await page.goto("/");
+
+    const card = page
+      .getByTestId("product-card")
+      .filter({ hasText: "Stormline Shell Jacket" });
+
+    await expect(card).toBeVisible();
+    await expect(
+      card.getByRole("img", { name: "Stormline Shell Jacket" }),
+    ).toBeVisible();
+    await expect(card).toContainText("Jackets");
+    await expect(card).toContainText("Size: M. Fit: relaxed shell fit");
+    await expect(card).toContainText("$189.00");
+    await expect(card).toContainText("12 in stock");
+    await expect(
+      card.getByRole("button", { name: "Add to Cart" }),
+    ).toBeEnabled();
+  });
+
+  test("category filters display and filter products", async ({ page }) => {
     await page.goto("/");
     const categoryLinks = page.getByLabel("Product categories");
+
+    await expect(
+      categoryLinks.getByRole("link", { name: "All" }),
+    ).toHaveAttribute("aria-current", "page");
+    await expect(
+      categoryLinks.getByRole("link", { name: "Jackets" }),
+    ).toBeVisible();
+    await expect(
+      categoryLinks.getByRole("link", { name: "Hoodies" }),
+    ).toBeVisible();
+    await expect(
+      categoryLinks.getByRole("link", { name: "Pants" }),
+    ).toBeVisible();
+    await expect(
+      categoryLinks.getByRole("link", { name: "Accessories" }),
+    ).toBeVisible();
+
+    await categoryLinks.getByRole("link", { name: "Jackets" }).click();
+
+    await expect(page).toHaveURL(/\/category\/jackets$/);
+    await expect(page.getByTestId("product-card")).toHaveCount(2);
+    await expect(
+      page
+        .getByTestId("product-card")
+        .filter({ hasText: "Stormline Shell Jacket" }),
+    ).toBeVisible();
+
+    await categoryLinks.getByRole("link", { name: "Hoodies" }).click();
+
+    await expect(page).toHaveURL(/\/category\/hoodies$/);
+    await expect(page.getByTestId("product-card")).toHaveCount(2);
+    await expect(
+      page
+        .getByTestId("product-card")
+        .filter({ hasText: "Everyday Heavy Hoodie" }),
+    ).toBeVisible();
 
     await categoryLinks.getByRole("link", { name: "Pants" }).click();
 
     await expect(page).toHaveURL(/\/category\/pants$/);
-    await expect(categoryLinks.getByRole("link", { name: "Pants" })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
+    await expect(
+      categoryLinks.getByRole("link", { name: "Pants" }),
+    ).toHaveAttribute("aria-current", "page");
     await expect(page.getByTestId("product-card")).toHaveCount(2);
     await expect(
-      page.getByTestId("product-card").filter({ hasText: "Tapered Cargo Pants" }),
+      page
+        .getByTestId("product-card")
+        .filter({ hasText: "Tapered Cargo Pants" }),
     ).toBeVisible();
     await expect(
-      page.getByTestId("product-card").filter({ hasText: "Wide Leg Utility Trouser" }),
+      page
+        .getByTestId("product-card")
+        .filter({ hasText: "Wide Leg Utility Trouser" }),
     ).toBeVisible();
     await expect(page.getByText("Everyday Heavy Hoodie")).not.toBeVisible();
+
+    await categoryLinks.getByRole("link", { name: "Accessories" }).click();
+
+    await expect(page).toHaveURL(/\/category\/accessories$/);
+    await expect(page.getByTestId("product-card")).toHaveCount(2);
+    await expect(
+      page.getByTestId("product-card").filter({ hasText: "Rib Knit Beanie" }),
+    ).toBeVisible();
+
+    await categoryLinks.getByRole("link", { name: "All" }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByTestId("product-card")).toHaveCount(8);
   });
 
   test("updates the cart count when products are added", async ({ page }) => {
@@ -63,4 +141,7 @@ test.describe("B2C store homepage", () => {
       page.getByRole("heading", { name: "1 item · $189.00" }),
     ).toBeVisible();
   });
+
+  // TODO: add a product detail page E2E test if a customer-facing product detail route is implemented.
+  // TODO: add a broken image fallback layout test if editable storefront images become part of the customer UI.
 });
