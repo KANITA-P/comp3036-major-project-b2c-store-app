@@ -2,7 +2,9 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "globalEnv": [
-    "PASSWORD",
+    "ADMIN_EMAIL",
+    "ADMIN_PASSWORD",
+    "ADMIN_JWT_SECRET",
     "VITEST",
     "E2E",
     "TEST_DATABASE_URL",

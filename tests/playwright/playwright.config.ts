@@ -2,7 +2,9 @@ import { defineConfig, devices } from "@playwright/test";
 import "dotenv/config";
 
 process.env.E2E ??= "true";
-process.env.PASSWORD ??= "123";
+process.env.ADMIN_EMAIL ??= "admin@threadline.com";
+process.env.ADMIN_PASSWORD ??= "test-admin-password";
+process.env.ADMIN_JWT_SECRET ??= "test-admin-secret";
 process.env.JWT_SECRET ??= "secret";
 
 export default defineConfig({

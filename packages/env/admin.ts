@@ -7,8 +7,7 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    PASSWORD: z.string(),
-    JWT_SECRET: z.string(),
+    ADMIN_JWT_SECRET: z.string(),
   },
 
   /**
@@ -26,8 +25,7 @@ export const env = createEnv({
    */
   runtimeEnv: {
     // E2E: process.env.E2E,
-    PASSWORD: process.env.PASSWORD,
-    JWT_SECRET: process.env.JWT_SECRET,
+    ADMIN_JWT_SECRET: process.env.ADMIN_JWT_SECRET,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

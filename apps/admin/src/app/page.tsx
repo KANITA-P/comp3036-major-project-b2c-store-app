@@ -40,9 +40,23 @@ export default async function Home({
         <section className={styles.authCard} aria-label="Admin login">
           <p className={styles.eyebrow}>Threadline Admin</p>
           <h1 className={styles.authTitle}>Welcome back</h1>
-          <p className={styles.authSubtitle}>Sign in to manage store products</p>
+          <p className={styles.authSubtitle}>
+            Sign in to manage store products
+          </p>
 
           <form action="/api/auth" className={styles.authForm} method="post">
+            <label className={styles.label} htmlFor="email">
+              Email
+            </label>
+            <input
+              className={styles.input}
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+            />
+
             <label className={styles.label} htmlFor="password">
               Password
             </label>
@@ -52,10 +66,16 @@ export default async function Home({
               name="password"
               type="password"
               autoComplete="current-password"
+              required
             />
 
-            {params.error === "invalid-password" ? (
-              <p className={styles.error}>Incorrect password</p>
+            {params.error === "invalid-credentials" ? (
+              <p className={styles.error}>Invalid credentials</p>
+            ) : null}
+            {params.error === "too-many-attempts" ? (
+              <p className={styles.error}>
+                Too many login attempts. Please try again later.
+              </p>
             ) : null}
 
             <button className={styles.primaryButton} type="submit">

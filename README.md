@@ -134,21 +134,24 @@ cd ../..
 
 ## Environment Variables
 
-Create `.env` files from the provided `.env.example` files where required. At minimum, the database package and apps need access to the database URL and JWT secret.
+Create `.env` files from the provided `.env.example` files where required. At minimum, the database package and apps need access to the database URL and JWT secret. The web app needs its own `apps/web/.env` when you run it directly.
 
 Example:
 
 ```env
 DATABASE_URL="postgresql://YOUR_USERNAME@localhost:5432/threadline_store?schema=public"
-JWT_SECRET="your-secret-key"
-PASSWORD="123"
+JWT_SECRET="replace-with-a-long-random-customer-secret"
+ADMIN_EMAIL="admin@threadline.com"
+ADMIN_PASSWORD="replace-with-a-strong-admin-password"
+ADMIN_JWT_SECRET="replace-with-a-long-random-admin-secret"
 ```
 
 Notes:
 
 - `DATABASE_URL` is used by Prisma and the Next.js apps.
-- `JWT_SECRET` is used for customer/admin token signing.
-- `PASSWORD` is used by the admin login prototype.
+- `JWT_SECRET` is required for customer token signing. The app does not fall back to a default customer JWT secret.
+- `ADMIN_EMAIL` and `ADMIN_PASSWORD` are used by the database seed to create the single admin user. The password is hashed with bcrypt before storage.
+- `ADMIN_JWT_SECRET` is used for admin token signing and should be separate from the customer `JWT_SECRET`.
 
 ## Database Setup
 
@@ -262,7 +265,7 @@ Responses:
 
 #### `POST /api/login`
 
-Logs in a customer and sets an auth cookie.
+Logs in a customer and sets an HTTP-only auth cookie. Customer JWTs include an expiry and `aud: "customer"`.
 
 Request body:
 
@@ -278,6 +281,7 @@ Responses:
 - `200` with `{ "success": true, "user": ... }`
 - `400` for missing fields
 - `401` for invalid credentials
+- `429` for too many login attempts
 
 #### `DELETE /api/logout`
 
@@ -309,13 +313,14 @@ Runs the seed function and returns `{ "message": "Seeded" }`. This exists for de
 
 #### `POST /api/auth`
 
-Logs in an admin user using the configured `PASSWORD` and sets an auth cookie.
+Logs in the seeded admin user with email and password, then sets an HTTP-only admin auth cookie. The matching database user must have `role: "ADMIN"`. Admin JWTs include an expiry and `aud: "admin"`.
 
 Request body for JSON requests:
 
 ```json
 {
-  "password": "123"
+  "email": "admin@threadline.com",
+  "password": "replace-with-a-strong-admin-password"
 }
 ```
 
@@ -324,7 +329,8 @@ Responses:
 - `200` with `{ "success": true }` for JSON requests
 - `303` redirect for form submissions
 - `400` for invalid JSON requests
-- `401` for invalid password
+- `401` for invalid credentials
+- `429` for too many login attempts
 
 #### `DELETE /api/auth`
 
@@ -419,7 +425,7 @@ Deployment requirements for final:
 - Hosted PostgreSQL database.
 - Production `DATABASE_URL`.
 - Production `JWT_SECRET`.
-- Secure admin password configuration.
+- Production `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `ADMIN_JWT_SECRET`.
 - Hosted web and admin Next.js applications.
 - Prisma migrations applied in the deployment environment.
 
