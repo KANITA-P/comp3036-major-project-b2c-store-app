@@ -19,6 +19,57 @@ test.afterAll(async () => {
   });
 });
 
+async function createCustomerOrder() {
+  const product = await client.db.product.findFirstOrThrow({
+    where: {
+      name: "Stormline Shell Jacket",
+    },
+    select: {
+      id: true,
+      name: true,
+      price: true,
+    },
+  });
+  const subtotal = Number(product.price).toFixed(2);
+
+  await client.db.user.upsert({
+    where: {
+      email: customerEmail,
+    },
+    update: {
+      name: "Admin Reject Customer",
+      role: "USER",
+    },
+    create: {
+      name: "Admin Reject Customer",
+      email: customerEmail,
+      password: "test-password-hash",
+      role: "USER",
+    },
+  });
+
+  await client.db.order.create({
+    data: {
+      user: {
+        connect: {
+          email: customerEmail,
+        },
+      },
+      status: "CONFIRMED",
+      totalAmount: subtotal,
+      items: {
+        create: {
+          productId: product.id,
+          productName: product.name,
+          quantity: 1,
+          priceAtPurchase: subtotal,
+          subtotal,
+        },
+      },
+    },
+  });
+}
+
 async function login(page: import("@playwright/test").Page) {
   await page.goto("/");
   await page.getByLabel("Email").fill(adminEmail);
@@ -51,9 +102,19 @@ test.describe("Admin product management", () => {
     await expect(
       page.getByRole("heading", { name: "Welcome back" }),
     ).toBeVisible();
+
+    await page.goto("/orders");
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(
+      page.getByRole("heading", { name: "Welcome back" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Customer Orders" }),
+    ).toHaveCount(0);
   });
 
-  test("normal customer user cannot access admin", async ({
+  test("normal customer user cannot access admin purchase records", async ({
     page,
     request,
   }) => {
@@ -80,6 +141,7 @@ test.describe("Admin product management", () => {
   test("shows product admin after login", async ({ page }) => {
     await login(page);
 
+    await expect(page.getByRole("link", { name: "View Orders" })).toBeVisible();
     await expect(
       page.getByRole("link", { name: "Create Product" }),
     ).toBeVisible();
@@ -105,5 +167,30 @@ test.describe("Admin product management", () => {
     await expect(page.getByLabel("Category")).toHaveValue("Pants");
     await expect(page.getByLabel("Price")).toHaveValue("129");
     await expect(page.getByAltText("Preview")).toBeVisible();
+  });
+
+  test("shows customer purchase records after admin login", async ({
+    page,
+  }) => {
+    await createCustomerOrder();
+    await login(page);
+    await page.getByRole("link", { name: "View Orders" }).click();
+
+    await expect(page).toHaveURL(/\/orders$/);
+    await expect(
+      page.getByRole("heading", { name: "Customer Orders" }),
+    ).toBeVisible();
+    await expect(page.getByTestId("admin-order-card").first()).toContainText(
+      "Admin Reject Customer",
+    );
+    await expect(page.getByTestId("admin-order-card").first()).toContainText(
+      customerEmail,
+    );
+    await expect(page.getByTestId("admin-order-card").first()).toContainText(
+      "Stormline Shell Jacket",
+    );
+    await expect(page.getByTestId("admin-order-card").first()).toContainText(
+      "CONFIRMED",
+    );
   });
 });

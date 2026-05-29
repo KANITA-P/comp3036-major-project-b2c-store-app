@@ -102,8 +102,17 @@ test.describe("Customer purchase flow", () => {
     await expect(page.getByTestId("cart-button")).toContainText("0");
   });
 
-  test("checkout redirects to login when logged out", async ({ page }) => {
+  test("checkout and orders redirect to login when logged out", async ({
+    page,
+  }) => {
     await page.goto("/checkout");
+
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(
+      page.getByRole("heading", { name: "Sign in to continue your cart." }),
+    ).toBeVisible();
+
+    await page.goto("/account/orders");
 
     await expect(page).toHaveURL(/\/login$/);
     await expect(
@@ -159,5 +168,13 @@ test.describe("Customer purchase flow", () => {
     expect(Number(order?.totalAmount)).toBeGreaterThan(0);
     expect(order?.items).toHaveLength(1);
     expect(order?.items[0]?.productName).toBe("Stormline Shell Jacket");
+
+    await page.getByRole("link", { name: "View orders" }).click();
+
+    await expect(page).toHaveURL(/\/account\/orders$/);
+    await expect(page.getByTestId("customer-order")).toContainText(
+      "Stormline Shell Jacket",
+    );
+    await expect(page.getByTestId("customer-order")).toContainText("CONFIRMED");
   });
 });

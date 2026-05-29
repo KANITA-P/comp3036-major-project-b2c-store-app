@@ -96,6 +96,10 @@ export default async function Home({
         </div>
 
         <div className={styles.headerActions}>
+          <Link className={styles.secondaryLink} href="/orders">
+            View Orders
+          </Link>
+
           <Link className={styles.primaryLink} href="/products/create">
             Create Product
           </Link>
