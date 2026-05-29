@@ -80,7 +80,9 @@ test.describe("Customer purchase flow", () => {
 
     await expect(page).toHaveURL(/\/cart$/);
     await expect(
-      page.getByTestId("cart-line").filter({ hasText: "Stormline Shell Jacket" }),
+      page
+        .getByTestId("cart-line")
+        .filter({ hasText: "Stormline Shell Jacket" }),
     ).toBeVisible();
     await expect(page.getByRole("link", { name: "Checkout" })).toBeVisible();
   });
@@ -122,7 +124,9 @@ test.describe("Customer purchase flow", () => {
     await expect(page.getByLabel("Payment method")).toBeVisible();
   });
 
-  test("mock place order clears cart and shows confirmation", async ({ page }) => {
+  test("mock place order clears cart and shows confirmation", async ({
+    page,
+  }) => {
     await registerAndLogin(page);
     await addStormlineJacket(page);
     await page.goto("/checkout");
@@ -135,5 +139,25 @@ test.describe("Customer purchase flow", () => {
       page.getByRole("heading", { name: "Thanks for your mock purchase." }),
     ).toBeVisible();
     await expect(page.getByTestId("cart-button")).toContainText("0");
+
+    const order = await client.db.order.findFirst({
+      where: {
+        user: {
+          email: createdEmails.at(-1),
+        },
+      },
+      include: {
+        items: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    expect(order).not.toBeNull();
+    expect(order?.status).toBe("CONFIRMED");
+    expect(Number(order?.totalAmount)).toBeGreaterThan(0);
+    expect(order?.items).toHaveLength(1);
+    expect(order?.items[0]?.productName).toBe("Stormline Shell Jacket");
   });
 });
