@@ -1,4 +1,5 @@
 import { client } from "@repo/db/client";
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { isLoggedIn } from "../../../../utils/auth";
 
@@ -81,7 +82,10 @@ export async function PATCH(
     !Number.isInteger(productBody.stock) ||
     productBody.stock < 0
   ) {
-    return NextResponse.json({ error: "Invalid product data" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid product data" },
+      { status: 400 },
+    );
   }
 
   const categoryId = await getOrCreateCategoryId(productBody.category);
@@ -102,4 +106,49 @@ export async function PATCH(
   });
 
   return NextResponse.json(product);
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const loggedIn = await isLoggedIn();
+
+  if (!loggedIn) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const productId = parseProductId(id);
+
+  if (!productId) {
+    return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
+  }
+
+  try {
+    await client.db.product.delete({
+      where: { id: productId },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      return NextResponse.json(
+        { error: "Cannot delete a product with order history" },
+        { status: 409 },
+      );
+    }
+
+    throw error;
+  }
 }

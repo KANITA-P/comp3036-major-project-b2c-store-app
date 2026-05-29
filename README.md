@@ -44,6 +44,7 @@ The current Iteration 1 version is a semi-functional working prototype. It suppo
 - Admin product list.
 - Product creation page.
 - Product edit page.
+- Product delete workflow.
 - Product image URL validation and preview.
 
 ### Database
@@ -56,8 +57,8 @@ The current Iteration 1 version is a semi-functional working prototype. It suppo
 
 ### Testing
 
-- 18 passing Playwright E2E tests.
-- Tests cover customer auth, search, category filtering, cart count, cart page behavior, mock checkout, admin login, admin product list, and opening the edit product page.
+- 33 passing Playwright E2E tests.
+- Tests cover customer auth, search, category filtering, cart behavior, mock checkout, purchase history, admin login, admin product list, create/edit/delete product management, and admin purchase records.
 - Web unit seed-data test with Vitest.
 - CI runs tests automatically.
 
@@ -75,6 +76,7 @@ Completed:
 - Admin JWT login.
 - Admin product list.
 - Admin create/edit product pages.
+- Admin product delete workflow.
 - PostgreSQL and Prisma integration.
 - Prisma seed data for categories and products.
 - Playwright E2E coverage for core flows.
@@ -82,21 +84,13 @@ Completed:
 
 Not completed yet:
 
-- Persistent checkout/order storage.
 - Payment is currently a mock prototype flow; no real Stripe/PayPal integration is planned unless required.
-- Database-backed purchase history.
-- Admin purchase/order records.
-- Product delete workflow.
 - Persistent customer cart records.
 - Production deployment.
 
 ## Remaining Work for Iteration 2/Final
 
-- Implement database-backed order creation after mock checkout.
-- Add persisted purchase history for customers.
-- Add admin order/purchase management.
 - Keep payment as a mock prototype flow unless the final marking requirements ask for a real provider.
-- Add product deletion if required by final scope.
 - Improve cart persistence beyond `localStorage`.
 - Add richer validation and error states for product/admin forms.
 - Deploy the web and admin applications.
@@ -216,8 +210,8 @@ pnpm --filter @repo/playwright exec playwright test
 
 Current E2E status:
 
-- 18 Playwright tests passing.
-- Coverage includes auth, search, filtering, cart count, cart page loading, add/remove cart behavior, checkout login redirect, logged-in checkout access, mock order confirmation, admin login, admin product list, and admin edit-page access.
+- 33 Playwright tests passing.
+- Coverage includes auth, search, filtering, cart count, cart page loading, add/remove cart behavior, checkout login redirect, logged-in checkout access, mock order confirmation, purchase history, admin login, admin product list, admin create/edit/delete flows, and admin purchase records.
 
 If a dev server is already running on ports `3001` or `3002`, stop it before running the Playwright command that starts its own servers.
 
@@ -386,14 +380,21 @@ Responses:
 - `400` for invalid product id or product data
 - `401` for unauthenticated requests
 
+#### `DELETE /api/products/[id]`
+
+Deletes a product. Requires admin authentication.
+
+Responses:
+
+- `200` with `{ "success": true }`
+- `400` for invalid product id
+- `401` for unauthenticated requests
+- `404` when the product does not exist
+- `409` when the product has order history and cannot be safely deleted
+
 ### Planned API Work
 
-The following API areas are planned for Iteration 2/final and are not implemented yet:
-
-- Database-backed checkout/order creation.
-- Customer purchase history backed by stored order records.
-- Admin purchase/order records.
-- Product delete endpoint.
+The core product, auth, checkout, order history, and admin order APIs are implemented for the university project scope.
 
 ## Project Structure
 

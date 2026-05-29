@@ -8,9 +8,19 @@ const customerEmail = `admin-reject-customer-${Date.now()}@example.com`;
 const customerPassword = "Password123";
 const createdProductBaseName = `Playwright Test Jacket ${Date.now()}`;
 const updatedProductName = `${createdProductBaseName} Updated`;
+const deletedProductName = `Playwright Test Delete ${Date.now()}`;
+const unauthDeleteProductName = `Playwright Test Unauth Delete ${Date.now()}`;
+const customerDeleteProductName = `Playwright Test Customer Delete ${Date.now()}`;
 
 test.beforeAll(async () => {
   await seed();
+  await client.db.product.deleteMany({
+    where: {
+      name: {
+        startsWith: "Playwright Test",
+      },
+    },
+  });
 });
 
 test.afterAll(async () => {
@@ -22,11 +32,36 @@ test.afterAll(async () => {
   await client.db.product.deleteMany({
     where: {
       name: {
-        in: [createdProductBaseName, updatedProductName],
+        startsWith: "Playwright Test",
       },
     },
   });
 });
+
+async function createTestProduct(name: string) {
+  const category = await client.db.category.findUniqueOrThrow({
+    where: {
+      name: "Jackets",
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return client.db.product.create({
+    data: {
+      name,
+      description: "Created by Playwright for product deletion coverage.",
+      image: "https://example.com/playwright-delete-product.jpg",
+      price: 64,
+      stock: 3,
+      categoryId: category.id,
+    },
+    select: {
+      id: true,
+    },
+  });
+}
 
 async function createCustomerOrder() {
   const product = await client.db.product.findFirstOrThrow({
@@ -231,6 +266,100 @@ test.describe("Admin product management", () => {
     await expect(updatedCard).toContainText("6 in stock");
   });
 
+  test("admin can delete a product", async ({ page }) => {
+    await createTestProduct(deletedProductName);
+    await login(page);
+
+    const productCard = page
+      .getByTestId("admin-product-card")
+      .filter({ hasText: deletedProductName });
+
+    await expect(productCard).toBeVisible();
+
+    page.once("dialog", async (dialog) => {
+      expect(dialog.message()).toContain(deletedProductName);
+      await dialog.accept();
+    });
+
+    await productCard
+      .getByRole("button", { name: `Delete ${deletedProductName}` })
+      .click();
+
+    await expect(page.getByText(`${deletedProductName} deleted`)).toBeVisible();
+    await expect(productCard).toHaveCount(0);
+
+    const deletedProduct = await client.db.product.findFirst({
+      where: {
+        name: deletedProductName,
+      },
+    });
+
+    expect(deletedProduct).toBeNull();
+  });
+
+  test("unauthenticated visitor cannot delete products", async ({
+    page,
+    request,
+  }) => {
+    const product = await createTestProduct(unauthDeleteProductName);
+
+    const response = await request.delete(
+      `http://localhost:3002/api/products/${product.id}`,
+    );
+
+    expect(response.status()).toBe(401);
+
+    await page.goto("/");
+
+    await expect(
+      page.getByRole("heading", { name: "Welcome back" }),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /Delete/ })).toHaveCount(0);
+    const remainingProduct = await client.db.product.findUnique({
+      where: {
+        id: product.id,
+      },
+    });
+
+    expect(remainingProduct).not.toBeNull();
+  });
+
+  test("normal customer cannot delete products through the admin API", async ({
+    page,
+    request,
+  }) => {
+    const product = await createTestProduct(customerDeleteProductName);
+
+    await request.post("http://localhost:3001/api/register", {
+      data: {
+        name: "Admin Delete Reject Customer",
+        email: customerEmail,
+        password: customerPassword,
+        confirmPassword: customerPassword,
+      },
+    });
+
+    await page.goto("http://localhost:3001/login");
+    await page.getByLabel("Email").fill(customerEmail);
+    await page.getByLabel("Password").fill(customerPassword);
+    await page.getByRole("button", { name: "Login" }).click();
+
+    await expect(page.getByRole("link", { name: "Account" })).toBeVisible();
+
+    const response = await page.request.delete(
+      `http://localhost:3002/api/products/${product.id}`,
+    );
+
+    expect(response.status()).toBe(401);
+    const remainingProduct = await client.db.product.findUnique({
+      where: {
+        id: product.id,
+      },
+    });
+
+    expect(remainingProduct).not.toBeNull();
+  });
+
   test("shows customer purchase records after admin login", async ({
     page,
   }) => {
@@ -255,6 +384,4 @@ test.describe("Admin product management", () => {
       "CONFIRMED",
     );
   });
-
-  // TODO: add an admin delete-product E2E test if product deletion is implemented.
 });
