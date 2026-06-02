@@ -9,6 +9,16 @@ import type { CustomerSession } from "@/utils/auth";
 import { CART_UPDATED_EVENT, getCartCount, readCart } from "@/utils/cart";
 import { CartButton } from "./CartButton";
 
+const ADMIN_LOGIN_URL =
+  (process.env.NEXT_PUBLIC_ADMIN_URL || "http://localhost:3002").replace(
+    /\/$/,
+    "",
+  );
+const authLinkClass =
+  "text-sm font-medium text-neutral-600 outline-none transition hover:text-neutral-950 focus-visible:rounded-full focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2";
+const adminLoginLinkClass =
+  "whitespace-nowrap rounded-full border border-neutral-300 px-3 py-2 text-sm font-bold text-neutral-700 outline-none transition hover:border-neutral-950 hover:text-neutral-950 focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2";
+
 export function Navbar({
   cartCount,
   currentUser,
@@ -75,13 +85,13 @@ export function Navbar({
           {currentUser ? (
             <>
               <Link
-                className="hidden text-sm font-medium text-neutral-600 hover:text-neutral-950 sm:inline"
+                className={`hidden sm:inline ${authLinkClass}`}
                 href="/account"
               >
                 Account
               </Link>
               <Link
-                className="hidden text-sm font-medium text-neutral-600 hover:text-neutral-950 sm:inline"
+                className={`hidden sm:inline ${authLinkClass}`}
                 href="/account/orders"
               >
                 Orders
@@ -91,19 +101,25 @@ export function Navbar({
           ) : (
             <div className="hidden items-center gap-3 sm:flex">
               <Link
-                className="text-sm font-medium text-neutral-600 hover:text-neutral-950"
+                className={authLinkClass}
                 href="/login"
               >
                 Login
               </Link>
               <Link
-                className="text-sm font-bold text-neutral-950 hover:text-neutral-600"
+                className="text-sm font-bold text-neutral-950 outline-none transition hover:text-neutral-600 focus-visible:rounded-full focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2"
                 href="/register"
               >
                 Register
               </Link>
             </div>
           )}
+          <a
+            className={`hidden sm:inline-flex ${adminLoginLinkClass}`}
+            href={ADMIN_LOGIN_URL}
+          >
+            Admin Login
+          </a>
           <CartButton count={displayCartCount} />
         </div>
       </div>
@@ -111,13 +127,13 @@ export function Navbar({
         {currentUser ? (
           <>
             <Link
-              className="text-sm font-medium text-neutral-600 hover:text-neutral-950"
+              className={authLinkClass}
               href="/account"
             >
               Account
             </Link>
             <Link
-              className="text-sm font-medium text-neutral-600 hover:text-neutral-950"
+              className={authLinkClass}
               href="/account/orders"
             >
               Orders
@@ -127,19 +143,22 @@ export function Navbar({
         ) : (
           <>
             <Link
-              className="text-sm font-medium text-neutral-600 hover:text-neutral-950"
+              className={authLinkClass}
               href="/login"
             >
               Login
             </Link>
             <Link
-              className="text-sm font-bold text-neutral-950 hover:text-neutral-600"
+              className="text-sm font-bold text-neutral-950 outline-none transition hover:text-neutral-600 focus-visible:rounded-full focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2"
               href="/register"
             >
               Register
             </Link>
           </>
         )}
+        <a className={adminLoginLinkClass} href={ADMIN_LOGIN_URL}>
+          Admin Login
+        </a>
       </div>
     </header>
   );

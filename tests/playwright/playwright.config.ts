@@ -6,6 +6,7 @@ process.env.ADMIN_EMAIL ??= "admin@threadline.com";
 process.env.ADMIN_PASSWORD ??= "test-admin-password";
 process.env.ADMIN_JWT_SECRET ??= "test-admin-secret";
 process.env.JWT_SECRET ??= "secret";
+process.env.NEXT_PUBLIC_ADMIN_URL ??= "http://localhost:3002";
 
 export default defineConfig({
   testDir: "./tests",

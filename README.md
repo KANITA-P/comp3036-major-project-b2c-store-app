@@ -6,7 +6,7 @@ Threadline is a B2C clothing store prototype built for the COMP3036-FS major pro
 
 This repository is focused only on the B2C clothing store project. It was adapted from a previous assignment codebase, while the old blog application is preserved separately.
 
-The current Iteration 1 version is a semi-functional working prototype. It supports product browsing, category filtering, search, customer authentication, local cart management, mock checkout, admin authentication, and basic admin create/edit product workflows backed by PostgreSQL and Prisma.
+The current version is a working B2C store prototype. It supports product browsing, category filtering, search, customer authentication, local cart management, mock checkout with persisted order records, customer purchase history, admin authentication, product create/edit/delete workflows, and admin purchase record viewing backed by PostgreSQL and Prisma.
 
 ## Success Criteria
 
@@ -14,9 +14,11 @@ The current Iteration 1 version is a semi-functional working prototype. It suppo
 - Customers can search and filter products by category.
 - Customers can register, log in, log out, and view their session state.
 - Customers can add products to a local cart, update quantities, remove items, and see cart count/total updates.
-- Customers can complete a frontend mock checkout flow and see an order confirmation screen.
+- Customers can complete a mock checkout flow that saves an order and see an order confirmation screen.
+- Customers can view past purchases with order dates, items, quantities, and totals.
 - Admin users can log in with JWT-based authentication.
-- Admin users can view, create, and edit products.
+- Admin users can view, create, edit, and delete products.
+- Admin users can view customer purchase records.
 - Seeded product data includes realistic clothing descriptions, sizing notes, stock, categories, and matching public image URLs.
 - E2E tests verify the main customer and admin flows.
 - GitHub Actions runs database setup, seed, lint, build/test workflow automatically.
@@ -32,8 +34,9 @@ The current Iteration 1 version is a semi-functional working prototype. It suppo
 - Cart stored in `localStorage`.
 - Cart page with product images, quantities, subtotals, remove controls, and order total.
 - Mock checkout page for logged-in customers.
+- Checkout creates confirmed order and order item records in PostgreSQL and decrements product stock.
 - Order confirmation page that clears the local cart after mock payment.
-- Purchase history placeholder page for future backend order records.
+- Purchase history page showing the logged-in customer's saved orders, dates, statuses, items, quantities, and totals.
 - Cart count and total update when products are added, removed, or updated.
 - Customer registration, login, logout, and current-user session endpoint.
 - Responsive UI built with Tailwind CSS.
@@ -45,6 +48,7 @@ The current Iteration 1 version is a semi-functional working prototype. It suppo
 - Product creation page.
 - Product edit page.
 - Product delete workflow.
+- Customer purchase records page.
 - Product image URL validation and preview.
 
 ### Database
@@ -52,13 +56,15 @@ The current Iteration 1 version is a semi-functional working prototype. It suppo
 - PostgreSQL database.
 - Prisma schema and migrations.
 - Seeded categories and products.
+- Customer users, admin users, orders, order items, products, and categories are stored in PostgreSQL.
+- Product, category, user, order, and order item relationships are modeled in Prisma.
 - Product stock remains a simple quantity field.
 - Clothing sizing information is stored in product descriptions, not as separate size variants.
 
 ### Testing
 
-- 33 passing Playwright E2E tests.
-- Tests cover customer auth, search, category filtering, cart behavior, mock checkout, purchase history, admin login, admin product list, create/edit/delete product management, and admin purchase records.
+- 42 passing Playwright E2E tests.
+- Tests cover customer auth, search, category filtering, product detail pages, cart behavior, mock checkout, persisted purchase history, checkout API validation, admin login, admin product list, create/edit/delete product management, admin purchase records, and access-control cases.
 - Web unit seed-data test with Vitest.
 - CI runs tests automatically.
 
@@ -70,13 +76,14 @@ Completed:
 
 - Storefront browsing/search/filtering.
 - Cart page, cart count, and local cart interaction.
-- Frontend mock checkout and order confirmation.
-- Purchase history placeholder page.
+- Mock checkout with persisted order records and order confirmation.
+- Customer purchase history page.
 - Customer registration/login/logout.
 - Admin JWT login.
 - Admin product list.
 - Admin create/edit product pages.
 - Admin product delete workflow.
+- Admin purchase records page.
 - PostgreSQL and Prisma integration.
 - Prisma seed data for categories and products.
 - Playwright E2E coverage for core flows.
@@ -85,7 +92,6 @@ Completed:
 Not completed yet:
 
 - Payment is currently a mock prototype flow; no real Stripe/PayPal integration is planned unless required.
-- Persistent customer cart records.
 - Production deployment.
 
 ## Remaining Work for Iteration 2/Final
@@ -135,6 +141,7 @@ Example:
 ```env
 DATABASE_URL="postgresql://YOUR_USERNAME@localhost:5432/threadline_store?schema=public"
 JWT_SECRET="replace-with-a-long-random-customer-secret"
+NEXT_PUBLIC_ADMIN_URL="http://localhost:3002"
 ADMIN_EMAIL="admin@threadline.com"
 ADMIN_PASSWORD="replace-with-a-strong-admin-password"
 ADMIN_JWT_SECRET="replace-with-a-long-random-admin-secret"
@@ -144,6 +151,7 @@ Notes:
 
 - `DATABASE_URL` is used by Prisma and the Next.js apps.
 - `JWT_SECRET` is required for customer token signing. The app does not fall back to a default customer JWT secret.
+- `NEXT_PUBLIC_ADMIN_URL` is used by the storefront navbar's Admin Login link. Use `http://localhost:3002` locally and the deployed admin app URL in production.
 - `ADMIN_EMAIL` and `ADMIN_PASSWORD` are used by the database seed to create the single admin user. The password is hashed with bcrypt before storage.
 - `ADMIN_JWT_SECRET` is used for admin token signing and should be separate from the customer `JWT_SECRET`.
 
@@ -188,6 +196,8 @@ Local URLs:
 - Web storefront: [http://localhost:3001](http://localhost:3001)
 - Admin app: [http://localhost:3002](http://localhost:3002)
 
+The storefront navbar includes an **Admin Login** link that opens the separate admin app. Set `NEXT_PUBLIC_ADMIN_URL` in `apps/web/.env` to control the destination. If it is not set, the web app falls back to `http://localhost:3002`.
+
 ## Running Tests
 
 Run the full Turbo test pipeline:
@@ -210,8 +220,8 @@ pnpm --filter @repo/playwright exec playwright test
 
 Current E2E status:
 
-- 33 Playwright tests passing.
-- Coverage includes auth, search, filtering, cart count, cart page loading, add/remove cart behavior, checkout login redirect, logged-in checkout access, mock order confirmation, purchase history, admin login, admin product list, admin create/edit/delete flows, and admin purchase records.
+- 42 Playwright tests passing.
+- Coverage includes customer auth, admin auth, search, filtering, product browsing, product detail pages, cart count, cart page loading, add/remove cart behavior, quantity limits, checkout login redirect, logged-in checkout access, checkout API validation, mock order confirmation, persisted purchase history, admin product list, admin create/edit/delete flows, admin purchase records, and access-control cases.
 
 If a dev server is already running on ports `3001` or `3002`, stop it before running the Playwright command that starts its own servers.
 
@@ -298,6 +308,29 @@ Response:
 ```
 
 or a logged-in user object.
+
+#### `POST /api/orders`
+
+Creates a confirmed mock checkout order for the logged-in customer. The endpoint validates cart items against current products, rejects empty or invalid carts, saves order and order item records, and decrements stock in a database transaction.
+
+Request body:
+
+```json
+{
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 2
+    }
+  ]
+}
+```
+
+Responses:
+
+- `200` with `{ "success": true, "order": { "id": 1, "total": 378, "count": 2 } }`
+- `400` for empty carts, invalid products, insufficient stock, or changed stock
+- `401` for unauthenticated requests
 
 #### `GET /api/seed`
 
@@ -394,7 +427,7 @@ Responses:
 
 ### Planned API Work
 
-The core product, auth, checkout, order history, and admin order APIs are implemented for the university project scope.
+The core auth, checkout/order creation, customer order history pages, admin product APIs, and admin order record pages are implemented for the university project scope. Customer product browsing is server-rendered through Prisma instead of a separate public products API route.
 
 ## Project Structure
 
@@ -441,8 +474,9 @@ The final demo should show:
 - Adding products to the cart.
 - Updating/removing cart items.
 - Completing the mock checkout flow.
-- Viewing the order confirmation and purchase history placeholder.
+- Viewing the order confirmation and persisted purchase history.
 - Admin login.
 - Admin product list.
-- Product creation/editing.
+- Product creation/editing/deletion.
+- Admin purchase records.
 - E2E tests or CI status.

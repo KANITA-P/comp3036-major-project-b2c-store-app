@@ -29,6 +29,7 @@ jobs:
       E2E: true
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/threadline_store?schema=public
       JWT_SECRET: test-secret
+      NEXT_PUBLIC_ADMIN_URL: http://localhost:3002
       ADMIN_EMAIL: admin@threadline.com
       ADMIN_PASSWORD: test-admin-password
       ADMIN_JWT_SECRET: test-admin-secret

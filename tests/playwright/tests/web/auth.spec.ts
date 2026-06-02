@@ -5,6 +5,13 @@ import { expect, test } from "@playwright/test";
 const testEmail = `customer-${Date.now()}@example.com`;
 const duplicateEmail = `duplicate-${Date.now()}@example.com`;
 const testPassword = "Password123";
+const adminLoginUrl = (
+  process.env.NEXT_PUBLIC_ADMIN_URL ?? "http://localhost:3002"
+).replace(/\/$/, "");
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 test.beforeAll(async () => {
   await seed();
@@ -21,6 +28,52 @@ test.afterAll(async () => {
 });
 
 test.describe("Customer authentication", () => {
+  test("storefront navbar shows admin login link with configured URL", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const adminLoginLink = page.getByRole("link", {
+      name: "Admin Login",
+    });
+
+    await expect(adminLoginLink).toBeVisible();
+    await expect(adminLoginLink).toHaveAttribute("href", adminLoginUrl);
+  });
+
+  test("admin login link navigates to the separate admin login page", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByRole("link", { name: "Admin Login" }).click();
+
+    await expect(page).toHaveURL(
+      new RegExp(`^${escapeRegExp(adminLoginUrl)}/?$`),
+    );
+    await expect(
+      page.getByRole("heading", { name: "Welcome back" }),
+    ).toBeVisible();
+  });
+
+  test("customer login and register links still navigate to customer pages", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    await page.getByRole("link", { name: "Login" }).first().click();
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(
+      page.getByRole("heading", { name: "Sign in to continue your cart." }),
+    ).toBeVisible();
+
+    await page.goto("/");
+    await page.getByRole("link", { name: "Register" }).first().click();
+    await expect(page).toHaveURL(/\/register$/);
+    await expect(
+      page.getByRole("heading", { name: "Create your customer account." }),
+    ).toBeVisible();
+  });
+
   test("register page loads", async ({ page }) => {
     await page.goto("/register");
 
