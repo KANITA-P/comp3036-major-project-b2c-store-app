@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
-import "dotenv/config";
+import { config as loadEnv } from "dotenv";
+import path from "node:path";
+
+loadEnv({ path: path.resolve(process.cwd(), "../../.env") });
 
 process.env.E2E ??= "true";
 process.env.ADMIN_EMAIL ??= "admin@threadline.com";
