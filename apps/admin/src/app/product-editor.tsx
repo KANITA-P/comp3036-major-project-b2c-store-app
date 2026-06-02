@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import styles from "./page.module.css";
+import { ViewStoreLink } from "./view-store-link";
 
 type EditorProduct = {
   name: string;
@@ -73,8 +74,14 @@ export function ProductEditor({
   return (
     <main className={styles.main}>
       <section className={styles.editorCard}>
-        <p className={styles.eyebrow}>{eyebrow}</p>
-        <h1 className={styles.pageTitle}>{heading}</h1>
+        <div className={styles.editorHeader}>
+          <div>
+            <p className={styles.eyebrow}>{eyebrow}</p>
+            <h1 className={styles.pageTitle}>{heading}</h1>
+          </div>
+
+          <ViewStoreLink />
+        </div>
 
         <form
           className={styles.editorForm}

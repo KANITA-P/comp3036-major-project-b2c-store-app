@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { isLoggedIn } from "../../utils/auth";
 import styles from "../page.module.css";
+import { ViewStoreLink } from "../view-store-link";
 
 function formatCurrency(value: unknown) {
   return new Intl.NumberFormat("en-AU", {
@@ -54,6 +55,8 @@ export default async function AdminOrdersPage() {
         </div>
 
         <div className={styles.headerActions}>
+          <ViewStoreLink />
+
           <Link className={styles.secondaryLink} href="/">
             Products
           </Link>

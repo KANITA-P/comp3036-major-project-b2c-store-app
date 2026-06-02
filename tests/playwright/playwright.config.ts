@@ -7,6 +7,7 @@ process.env.ADMIN_PASSWORD ??= "test-admin-password";
 process.env.ADMIN_JWT_SECRET ??= "test-admin-secret";
 process.env.JWT_SECRET ??= "secret";
 process.env.NEXT_PUBLIC_ADMIN_URL ??= "http://localhost:3002";
+process.env.NEXT_PUBLIC_WEB_URL ??= "http://localhost:3001";
 
 export default defineConfig({
   testDir: "./tests",

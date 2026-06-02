@@ -11,6 +11,13 @@ const updatedProductName = `${createdProductBaseName} Updated`;
 const deletedProductName = `Playwright Test Delete ${Date.now()}`;
 const unauthDeleteProductName = `Playwright Test Unauth Delete ${Date.now()}`;
 const customerDeleteProductName = `Playwright Test Customer Delete ${Date.now()}`;
+const webUrl = (
+  process.env.NEXT_PUBLIC_WEB_URL ?? "http://localhost:3001"
+).replace(/\/$/, "");
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 test.beforeAll(async () => {
   await seed();
@@ -185,6 +192,10 @@ test.describe("Admin product management", () => {
   test("shows product admin after login", async ({ page }) => {
     await login(page);
 
+    const viewStoreLink = page.getByRole("link", { name: "View Store" });
+
+    await expect(viewStoreLink).toBeVisible();
+    await expect(viewStoreLink).toHaveAttribute("href", webUrl);
     await expect(page.getByRole("link", { name: "View Orders" })).toBeVisible();
     await expect(
       page.getByRole("link", { name: "Create Product" }),
@@ -194,6 +205,18 @@ test.describe("Admin product management", () => {
       page.getByTestId("admin-product-card").filter({
         has: page.getByRole("link", { name: "Stormline Shell Jacket" }),
         hasText: "Jackets",
+      }),
+    ).toBeVisible();
+  });
+
+  test("admin can navigate from dashboard to storefront", async ({ page }) => {
+    await login(page);
+    await page.getByRole("link", { name: "View Store" }).click();
+
+    await expect(page).toHaveURL(new RegExp(`^${escapeRegExp(webUrl)}/?$`));
+    await expect(
+      page.getByRole("heading", {
+        name: "Clean layers for everyday movement.",
       }),
     ).toBeVisible();
   });
@@ -211,6 +234,7 @@ test.describe("Admin product management", () => {
     await expect(page.getByLabel("Category")).toHaveValue("Pants");
     await expect(page.getByLabel("Price")).toHaveValue("129");
     await expect(page.getByAltText("Preview")).toBeVisible();
+    await expect(page.getByRole("link", { name: "View Store" })).toBeVisible();
   });
 
   test("admin can create and update a product", async ({ page }) => {
@@ -371,6 +395,7 @@ test.describe("Admin product management", () => {
     await expect(
       page.getByRole("heading", { name: "Customer Orders" }),
     ).toBeVisible();
+    await expect(page.getByRole("link", { name: "View Store" })).toBeVisible();
     await expect(page.getByTestId("admin-order-card").first()).toContainText(
       "Admin Reject Customer",
     );

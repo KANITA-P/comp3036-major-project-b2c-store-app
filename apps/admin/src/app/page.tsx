@@ -4,6 +4,7 @@ import { isLoggedIn } from "../utils/auth";
 import { AdminList } from "./admin-list";
 import { LogoutButton } from "./logout-button";
 import styles from "./page.module.css";
+import { ViewStoreLink } from "./view-store-link";
 
 export default async function Home({
   searchParams,
@@ -96,6 +97,8 @@ export default async function Home({
         </div>
 
         <div className={styles.headerActions}>
+          <ViewStoreLink />
+
           <Link className={styles.secondaryLink} href="/orders">
             View Orders
           </Link>

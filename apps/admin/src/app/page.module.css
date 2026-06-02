@@ -80,6 +80,14 @@
     color 0.15s ease;
 }
 
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.primaryLink:focus-visible,
+.secondaryLink:focus-visible {
+  outline: 2px solid #0a0a0a;
+  outline-offset: 3px;
+}
+
 .primaryButton,
 .primaryLink {
   display: inline-flex;
@@ -275,6 +283,13 @@
   box-shadow: 0 12px 30px rgba(10, 10, 10, 0.06);
 }
 
+.editorHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .editorForm {
   margin-top: 1.5rem;
   display: grid;
@@ -427,6 +442,11 @@
   .header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .headerActions,
+  .editorHeader {
+    flex-wrap: wrap;
   }
 
   .filterGrid {

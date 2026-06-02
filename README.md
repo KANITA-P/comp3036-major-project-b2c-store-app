@@ -63,7 +63,7 @@ The current version is a working B2C store prototype. It supports product browsi
 
 ### Testing
 
-- 42 passing Playwright E2E tests.
+- 43 passing Playwright E2E tests.
 - Tests cover customer auth, search, category filtering, product detail pages, cart behavior, mock checkout, persisted purchase history, checkout API validation, admin login, admin product list, create/edit/delete product management, admin purchase records, and access-control cases.
 - Web unit seed-data test with Vitest.
 - CI runs tests automatically.
@@ -142,6 +142,7 @@ Example:
 DATABASE_URL="postgresql://YOUR_USERNAME@localhost:5432/threadline_store?schema=public"
 JWT_SECRET="replace-with-a-long-random-customer-secret"
 NEXT_PUBLIC_ADMIN_URL="http://localhost:3002"
+NEXT_PUBLIC_WEB_URL="http://localhost:3001"
 ADMIN_EMAIL="admin@threadline.com"
 ADMIN_PASSWORD="replace-with-a-strong-admin-password"
 ADMIN_JWT_SECRET="replace-with-a-long-random-admin-secret"
@@ -152,6 +153,7 @@ Notes:
 - `DATABASE_URL` is used by Prisma and the Next.js apps.
 - `JWT_SECRET` is required for customer token signing. The app does not fall back to a default customer JWT secret.
 - `NEXT_PUBLIC_ADMIN_URL` is used by the storefront navbar's Admin Login link. Use `http://localhost:3002` locally and the deployed admin app URL in production.
+- `NEXT_PUBLIC_WEB_URL` is used by the admin app's View Store link. Use `http://localhost:3001` locally and the deployed storefront URL in production.
 - `ADMIN_EMAIL` and `ADMIN_PASSWORD` are used by the database seed to create the single admin user. The password is hashed with bcrypt before storage.
 - `ADMIN_JWT_SECRET` is used for admin token signing and should be separate from the customer `JWT_SECRET`.
 
@@ -198,6 +200,8 @@ Local URLs:
 
 The storefront navbar includes an **Admin Login** link that opens the separate admin app. Set `NEXT_PUBLIC_ADMIN_URL` in `apps/web/.env` to control the destination. If it is not set, the web app falls back to `http://localhost:3002`.
 
+The admin dashboard, product pages, and purchase records page include a **View Store** link that opens the customer storefront. Set `NEXT_PUBLIC_WEB_URL` in `apps/admin/.env` to control the destination. If it is not set, the admin app falls back to `http://localhost:3001`.
+
 ## Running Tests
 
 Run the full Turbo test pipeline:
@@ -220,7 +224,7 @@ pnpm --filter @repo/playwright exec playwright test
 
 Current E2E status:
 
-- 42 Playwright tests passing.
+- 43 Playwright tests passing.
 - Coverage includes customer auth, admin auth, search, filtering, product browsing, product detail pages, cart count, cart page loading, add/remove cart behavior, quantity limits, checkout login redirect, logged-in checkout access, checkout API validation, mock order confirmation, persisted purchase history, admin product list, admin create/edit/delete flows, admin purchase records, and access-control cases.
 
 If a dev server is already running on ports `3001` or `3002`, stop it before running the Playwright command that starts its own servers.
