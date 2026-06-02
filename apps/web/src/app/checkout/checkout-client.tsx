@@ -94,14 +94,14 @@ export function CheckoutClient({
       <main className="mx-auto grid max-w-7xl gap-8 px-5 py-10 lg:grid-cols-[1fr_420px] lg:px-8">
         <section>
           <p className="text-sm font-bold uppercase tracking-normal text-neutral-500">
-            Mock Checkout
+            Checkout
           </p>
           <h1 className="mt-1 text-4xl font-black tracking-normal">
             Complete your purchase
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-600">
-            This university prototype uses a mock payment only. No real card or
-            payment provider is used.
+            Enter your delivery details and choose a payment method to place
+            your order.
           </p>
 
           <form
@@ -152,8 +152,8 @@ export function CheckoutClient({
                   id="payment-method"
                   name="paymentMethod"
                 >
-                  <option>Mock card ending 4242</option>
-                  <option>Mock Pay balance</option>
+                  <option>Card ending 4242</option>
+                  <option>Store credit balance</option>
                 </select>
               </div>
             </div>
@@ -210,7 +210,7 @@ export function CheckoutClient({
           ) : (
             <p className="mt-5 rounded-lg border border-dashed border-neutral-300 p-5 text-sm leading-6 text-neutral-600">
               Your cart is empty. Return to the storefront to add products
-              before mock checkout.
+              before checkout.
             </p>
           )}
         </aside>

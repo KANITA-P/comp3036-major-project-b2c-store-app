@@ -38,11 +38,11 @@ export function OrderConfirmationClient({
             Order Confirmed
           </p>
           <h1 className="mt-2 text-4xl font-black tracking-normal">
-            Thanks for your mock purchase.
+            Thanks for your order.
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-neutral-600">
-            Your mock payment was accepted and your local cart has been cleared.
-            This prototype does not create a real payment or shipment.
+            Your order has been placed and your cart has been cleared. You can
+            review the order details from your account.
           </p>
 
           {lastOrder ? (

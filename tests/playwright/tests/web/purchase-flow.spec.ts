@@ -302,7 +302,7 @@ test.describe("Customer purchase flow", () => {
 
     await expect(page).toHaveURL(/\/order-confirmation$/);
     await expect(
-      page.getByRole("heading", { name: "Thanks for your mock purchase." }),
+      page.getByRole("heading", { name: "Thanks for your order." }),
     ).toBeVisible();
     await expect(page.getByTestId("cart-button")).toContainText("0");
 
