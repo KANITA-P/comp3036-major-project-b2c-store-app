@@ -18,11 +18,11 @@ function getJwtSecret() {
   return secret;
 }
 
-export async function GET() {
+async function createStorefrontHandoffUrl() {
   const admin = await getCurrentAdmin();
 
   if (!admin) {
-    return NextResponse.redirect(WEB_URL, 303);
+    return null;
   }
 
   const token = signJwt(
@@ -39,5 +39,28 @@ export async function GET() {
 
   url.searchParams.set("token", token);
 
+  return url;
+}
+
+export async function GET() {
+  const url = await createStorefrontHandoffUrl();
+
+  if (!url) {
+    return NextResponse.redirect(WEB_URL, 303);
+  }
+
   return NextResponse.redirect(url, 303);
+}
+
+export async function POST() {
+  const url = await createStorefrontHandoffUrl();
+
+  if (!url) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  return NextResponse.json({
+    success: true,
+    redirectUrl: url.toString(),
+  });
 }

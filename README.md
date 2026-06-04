@@ -250,6 +250,41 @@ Only currently implemented API routes are listed here.
 
 ### Web App API
 
+#### `GET /api/products`
+
+Returns all available products from the database.
+
+The `stockQuantity` response field is mapped from the database `Product.stock` field.
+
+Request:
+
+- No request body required.
+- Authentication is not required.
+
+Response example:
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Black Denim Jacket",
+    "description": "Size: M. Fit: relaxed. Condition: Used - Good.",
+    "price": 89.99,
+    "image": "https://images.unsplash.com/example",
+    "stockQuantity": 5,
+    "category": {
+      "id": 1,
+      "name": "Jackets"
+    }
+  }
+]
+```
+
+Responses:
+
+- `200` with an array of product objects
+- `500` with `{ "error": "Unable to load products" }` if products cannot be loaded
+
 #### `POST /api/register`
 
 Registers a customer account.
@@ -313,6 +348,55 @@ Response:
 
 or a logged-in user object.
 
+#### `POST /api/admin-storefront-session`
+
+Creates a storefront session from a short-lived admin handoff token. This endpoint is used by the admin-to-storefront handoff to set the storefront `customer_auth_token` while clearing any stale admin cookie on the storefront origin.
+
+Purpose:
+
+- Supports secure navigation from the admin app to the storefront.
+- Prevents admin/customer session cookie conflicts.
+- Maintains separate customer and admin authentication states.
+
+Request body:
+
+```json
+{
+  "token": "short-lived-admin-storefront-handoff-token"
+}
+```
+
+Authentication requirements:
+
+- Requires a valid signed handoff token created by the admin app.
+- The token must have `aud: "admin-storefront-handoff"` and `role: "ADMIN"`.
+- The matching database user must still exist and have `role: "ADMIN"`.
+
+Response example:
+
+```json
+{
+  "success": true,
+  "user": {
+    "id": 1,
+    "name": "Threadline Admin",
+    "email": "admin@threadline.com",
+    "role": "ADMIN"
+  }
+}
+```
+
+Responses:
+
+- `200` with `{ "success": true, "user": ... }` and a storefront session cookie
+- `401` with `{ "error": "Invalid or expired storefront session token" }` for missing, invalid, expired, or unauthorized tokens
+
+Browser redirect support:
+
+- `GET /api/admin-storefront-session?token=...` is also supported for the admin dashboard's **View Store** redirect flow.
+- Valid tokens redirect to `/` and set the storefront session cookie.
+- Invalid tokens redirect to `/` without creating a storefront session.
+
 #### `POST /api/orders`
 
 Creates a confirmed mock checkout order for the logged-in customer. The endpoint validates cart items against current products, rejects empty or invalid carts, saves order and order item records, and decrements stock in a database transaction.
@@ -370,6 +454,46 @@ Logs out the admin user by clearing the auth cookie.
 Response:
 
 - `200` with `{ "success": true }`
+
+#### `POST /api/storefront-session`
+
+Creates a short-lived admin-to-storefront handoff URL. This endpoint is used when an authenticated admin wants to navigate from the admin dashboard to the customer storefront and arrive signed in to the storefront as an admin storefront session.
+
+Purpose:
+
+- Allows secure storefront authentication from the admin application.
+- Keeps admin and storefront session cookies separate.
+- Supports session handoff between the admin app and storefront without allowing admin login through the storefront login form.
+
+Request:
+
+- No request body required.
+
+Authentication requirements:
+
+- Requires a valid admin session cookie.
+- The admin token must have `aud: "admin"` and `role: "ADMIN"`.
+- The matching database user must still exist and have `role: "ADMIN"`.
+
+Response example:
+
+```json
+{
+  "success": true,
+  "redirectUrl": "http://localhost:3001/api/admin-storefront-session?token=..."
+}
+```
+
+Responses:
+
+- `200` with `{ "success": true, "redirectUrl": "..." }`
+- `401` with `{ "error": "Unauthorized" }` when the admin session is missing or invalid
+
+Browser redirect support:
+
+- `GET /api/storefront-session` is also supported for the admin dashboard's **View Store** link.
+- Authenticated admins are redirected to the storefront handoff receiver.
+- Unauthenticated visitors are redirected to the storefront without a handoff token.
 
 #### `POST /api/products`
 
@@ -431,7 +555,7 @@ Responses:
 
 ### Planned API Work
 
-The core auth, checkout/order creation, customer order history pages, admin product APIs, and admin order record pages are implemented for the university project scope. Customer product browsing is server-rendered through Prisma instead of a separate public products API route.
+The core auth, product browsing API, checkout/order creation, customer order history pages, admin product APIs, and admin order record pages are implemented for the university project scope.
 
 ## Project Structure
 
