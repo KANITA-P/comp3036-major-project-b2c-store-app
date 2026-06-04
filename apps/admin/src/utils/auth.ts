@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { verifyJwt } from "./jwt";
 
 export const AUTH_COOKIE_NAME = "auth_token";
+export const CUSTOMER_AUTH_COOKIE_NAME = "customer_auth_token";
 export const ADMIN_TOKEN_AUDIENCE = "admin";
 export const ADMIN_TOKEN_MAX_AGE = 60 * 60 * 24;
 
@@ -12,6 +13,11 @@ export type AdminTokenPayload = {
   email: string;
   role: "ADMIN";
   aud: typeof ADMIN_TOKEN_AUDIENCE;
+};
+
+export type AdminSession = {
+  id: number;
+  email: string;
 };
 
 export function getAdminJwtSecret() {
@@ -37,20 +43,19 @@ export function getAdminAuthCookieOptions() {
     sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: ADMIN_TOKEN_MAX_AGE,
   };
 }
 
-export async function isLoggedIn(): Promise<boolean> {
+export async function getCurrentAdmin(): Promise<AdminSession | null> {
   const userCookies = await cookies();
   const token = userCookies.get(AUTH_COOKIE_NAME)?.value;
 
-  if (!token) return false;
+  if (!token) return null;
 
   try {
     const payload = verifyJwt(token, getAdminJwtSecret());
 
-    if (!isAdminTokenPayload(payload)) return false;
+    if (!isAdminTokenPayload(payload)) return null;
 
     const user = await client.db.user.findUnique({
       where: { id: payload.userId },
@@ -60,8 +65,17 @@ export async function isLoggedIn(): Promise<boolean> {
       },
     });
 
-    return user?.email === payload.email && user.role === "ADMIN";
+    if (user?.email !== payload.email || user.role !== "ADMIN") return null;
+
+    return {
+      id: payload.userId,
+      email: payload.email,
+    };
   } catch {
-    return false;
+    return null;
   }
+}
+
+export async function isLoggedIn(): Promise<boolean> {
+  return Boolean(await getCurrentAdmin());
 }

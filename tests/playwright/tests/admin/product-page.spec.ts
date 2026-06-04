@@ -5,6 +5,7 @@ import { expect, test } from "@playwright/test";
 const adminEmail = process.env.ADMIN_EMAIL ?? "admin@threadline.com";
 const adminPassword = process.env.ADMIN_PASSWORD ?? "test-admin-password";
 const customerEmail = `admin-reject-customer-${Date.now()}@example.com`;
+const separationCustomerEmail = `admin-session-separation-customer-${Date.now()}@example.com`;
 const customerPassword = "Password123";
 const createdProductBaseName = `Playwright Test Jacket ${Date.now()}`;
 const updatedProductName = `${createdProductBaseName} Updated`;
@@ -33,7 +34,9 @@ test.beforeAll(async () => {
 test.afterAll(async () => {
   await client.db.user.deleteMany({
     where: {
-      email: customerEmail,
+      email: {
+        in: [customerEmail, separationCustomerEmail],
+      },
     },
   });
   await client.db.product.deleteMany({
@@ -189,13 +192,61 @@ test.describe("Admin product management", () => {
     ).toBeVisible();
   });
 
+  test("customer session cannot access admin pages and is cleared on entry", async ({
+    page,
+    request,
+  }) => {
+    await request.post("http://localhost:3001/api/register", {
+      data: {
+        name: "Admin Area Reject Customer",
+        email: separationCustomerEmail,
+        password: customerPassword,
+        confirmPassword: customerPassword,
+      },
+    });
+
+    await page.goto("http://localhost:3001/login");
+    await page.getByLabel("Email").fill(separationCustomerEmail);
+    await page.getByLabel("Password").fill(customerPassword);
+    await page.getByRole("button", { name: "Login" }).click();
+
+    await expect(
+      page.getByRole("link", { name: /^Account$/ }).first(),
+    ).toBeVisible();
+    await expect
+      .poll(async () => {
+        const cookies = await page.context().cookies();
+        return cookies.some((cookie) => cookie.name === "customer_auth_token");
+      })
+      .toBe(true);
+
+    await page.goto("/orders");
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(
+      page.getByRole("heading", { name: "Welcome back" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Customer Orders" }),
+    ).toHaveCount(0);
+    await expect
+      .poll(async () => {
+        const cookies = await page.context().cookies();
+        return cookies.some((cookie) => cookie.name === "customer_auth_token");
+      })
+      .toBe(false);
+  });
+
   test("shows product admin after login", async ({ page }) => {
     await login(page);
 
     const viewStoreLink = page.getByRole("link", { name: "View Store" });
 
     await expect(viewStoreLink).toBeVisible();
-    await expect(viewStoreLink).toHaveAttribute("href", webUrl);
+    await expect(viewStoreLink).toHaveAttribute(
+      "href",
+      "/api/storefront-session",
+    );
     await expect(page.getByRole("link", { name: "View Orders" })).toBeVisible();
     await expect(
       page.getByRole("link", { name: "Create Product" }),
@@ -218,6 +269,48 @@ test.describe("Admin product management", () => {
       page.getByRole("heading", {
         name: "Clean layers for everyday movement.",
       }),
+    ).toBeVisible();
+  });
+
+  test("admin logged in then navigating to storefront clears admin session", async ({
+    page,
+  }) => {
+    await login(page);
+    await expect
+      .poll(async () => {
+        const cookie = (await page.context().cookies()).find(
+          (item) => item.name === "auth_token",
+        );
+        return cookie?.expires;
+      })
+      .toBe(-1);
+
+    await page.getByRole("link", { name: "View Store" }).click();
+
+    await expect(page).toHaveURL(new RegExp(`^${escapeRegExp(webUrl)}/?$`));
+    await expect(
+      page.getByRole("link", { name: /^Account$/ }).first(),
+    ).toBeVisible();
+    await expect
+      .poll(async () => {
+        const cookies = await page.context().cookies();
+        return cookies.some((cookie) => cookie.name === "auth_token");
+      })
+      .toBe(false);
+    await expect
+      .poll(async () => {
+        const cookie = (await page.context().cookies()).find(
+          (item) => item.name === "customer_auth_token",
+        );
+        return cookie?.expires;
+      })
+      .toBe(-1);
+
+    await page.goto("/orders");
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(
+      page.getByRole("heading", { name: "Welcome back" }),
     ).toBeVisible();
   });
 

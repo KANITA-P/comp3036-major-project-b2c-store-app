@@ -4,10 +4,13 @@ import { expect, test } from "@playwright/test";
 
 const testEmail = `customer-${Date.now()}@example.com`;
 const duplicateEmail = `duplicate-${Date.now()}@example.com`;
+const separationEmail = `customer-session-separation-${Date.now()}@example.com`;
 const testPassword = "Password123";
 const adminLoginUrl = (
   process.env.NEXT_PUBLIC_ADMIN_URL ?? "http://localhost:3002"
 ).replace(/\/$/, "");
+const adminEmail = process.env.ADMIN_EMAIL ?? "admin@threadline.com";
+const adminPassword = process.env.ADMIN_PASSWORD ?? "test-admin-password";
 
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -21,7 +24,7 @@ test.afterAll(async () => {
   await client.db.user.deleteMany({
     where: {
       email: {
-        in: [testEmail, duplicateEmail],
+        in: [testEmail, duplicateEmail, separationEmail],
       },
     },
   });
@@ -53,6 +56,73 @@ test.describe("Customer authentication", () => {
     await expect(
       page.getByRole("heading", { name: "Welcome back" }),
     ).toBeVisible();
+  });
+
+  test("user logged in then navigating to admin clears customer session", async ({
+    page,
+    request,
+  }) => {
+    await request.post("/api/register", {
+      data: {
+        name: "Session Separation Customer",
+        email: separationEmail,
+        password: testPassword,
+        confirmPassword: testPassword,
+      },
+    });
+
+    await page.goto("/login");
+    await page.getByLabel("Email").fill(separationEmail);
+    await page.getByLabel("Password").fill(testPassword);
+    await page.getByRole("button", { name: "Login" }).click();
+
+    await expect(
+      page.getByRole("link", { name: /^Account$/ }).first(),
+    ).toBeVisible();
+    await expect
+      .poll(async () => {
+        const cookie = (await page.context().cookies()).find(
+          (item) => item.name === "customer_auth_token",
+        );
+        return cookie?.expires;
+      })
+      .toBe(-1);
+
+    await page.goto(adminLoginUrl);
+
+    await expect(page).toHaveURL(
+      new RegExp(`^${escapeRegExp(adminLoginUrl)}/?$`),
+    );
+    await expect(
+      page.getByRole("heading", { name: "Welcome back" }),
+    ).toBeVisible();
+    await expect
+      .poll(async () => {
+        const cookies = await page.context().cookies();
+        return cookies.some((cookie) => cookie.name === "customer_auth_token");
+      })
+      .toBe(false);
+
+    await page.goto("/account");
+
+    await expect(page).toHaveURL(/\/login$/);
+  });
+
+  test("admin credentials cannot log in through the storefront login page", async ({
+    page,
+  }) => {
+    await page.goto("/login");
+    await page.getByLabel("Email").fill(adminEmail);
+    await page.getByLabel("Password").fill(adminPassword);
+    await page.getByRole("button", { name: "Login" }).click();
+
+    await expect(page.getByText("Invalid email or password")).toBeVisible();
+    await expect
+      .poll(async () => {
+        const cookies = await page.context().cookies();
+        return cookies.some((cookie) => cookie.name === "customer_auth_token");
+      })
+      .toBe(false);
   });
 
   test("customer login and register links still navigate to customer pages", async ({

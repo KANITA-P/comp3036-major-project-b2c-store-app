@@ -6,6 +6,7 @@ import {
   ADMIN_TOKEN_AUDIENCE,
   ADMIN_TOKEN_MAX_AGE,
   AUTH_COOKIE_NAME,
+  CUSTOMER_AUTH_COOKIE_NAME,
   getAdminAuthCookieOptions,
   getAdminJwtSecret,
 } from "../../../utils/auth";
@@ -19,6 +20,11 @@ import {
 
 function setAuthCookie(response: NextResponse, value: string) {
   response.cookies.set(AUTH_COOKIE_NAME, value, getAdminAuthCookieOptions());
+  response.cookies.set(CUSTOMER_AUTH_COOKIE_NAME, "", {
+    httpOnly: true,
+    path: "/",
+    expires: new Date(0),
+  });
 }
 
 async function createAuthToken(user: { id: number; email: string }) {
@@ -150,6 +156,11 @@ export async function DELETE() {
   const response = NextResponse.json({ success: true });
 
   response.cookies.set(AUTH_COOKIE_NAME, "", {
+    httpOnly: true,
+    path: "/",
+    expires: new Date(0),
+  });
+  response.cookies.set(CUSTOMER_AUTH_COOKIE_NAME, "", {
     httpOnly: true,
     path: "/",
     expires: new Date(0),

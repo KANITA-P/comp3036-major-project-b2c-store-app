@@ -9,11 +9,9 @@ import type { CustomerSession } from "@/utils/auth";
 import { CART_UPDATED_EVENT, getCartCount, readCart } from "@/utils/cart";
 import { CartButton } from "./CartButton";
 
-const ADMIN_LOGIN_URL =
-  (process.env.NEXT_PUBLIC_ADMIN_URL || "http://localhost:3002").replace(
-    /\/$/,
-    "",
-  );
+const ADMIN_LOGIN_URL = (
+  process.env.NEXT_PUBLIC_ADMIN_URL || "http://localhost:3002"
+).replace(/\/$/, "");
 const authLinkClass =
   "text-sm font-medium text-neutral-600 outline-none transition hover:text-neutral-950 focus-visible:rounded-full focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2";
 const adminLoginLinkClass =
@@ -52,23 +50,43 @@ export function Navbar({
     router.push(query ? `/search?q=${encodeURIComponent(query)}` : "/");
   }
 
+  function clearCustomerBrowserStorage() {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+  }
+
   return (
     <header className="sticky top-0 z-20 border-b border-neutral-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between lg:px-8">
         <nav className="flex items-center gap-6">
-          <Link className="text-xl font-black tracking-normal text-neutral-950" href="/">
+          <Link
+            className="text-xl font-black tracking-normal text-neutral-950"
+            href="/"
+          >
             Threadline
           </Link>
-          <Link className="hidden text-sm font-medium text-neutral-600 hover:text-neutral-950 sm:inline" href="/category/jackets">
+          <Link
+            className="hidden text-sm font-medium text-neutral-600 hover:text-neutral-950 sm:inline"
+            href="/category/jackets"
+          >
             Jackets
           </Link>
-          <Link className="hidden text-sm font-medium text-neutral-600 hover:text-neutral-950 sm:inline" href="/category/hoodies">
+          <Link
+            className="hidden text-sm font-medium text-neutral-600 hover:text-neutral-950 sm:inline"
+            href="/category/hoodies"
+          >
             Hoodies
           </Link>
-          <Link className="hidden text-sm font-medium text-neutral-600 hover:text-neutral-950 sm:inline" href="/category/pants">
+          <Link
+            className="hidden text-sm font-medium text-neutral-600 hover:text-neutral-950 sm:inline"
+            href="/category/pants"
+          >
             Pants
           </Link>
-          <Link className="hidden text-sm font-medium text-neutral-600 hover:text-neutral-950 sm:inline" href="/category/accessories">
+          <Link
+            className="hidden text-sm font-medium text-neutral-600 hover:text-neutral-950 sm:inline"
+            href="/category/accessories"
+          >
             Accessories
           </Link>
         </nav>
@@ -100,10 +118,7 @@ export function Navbar({
             </>
           ) : (
             <div className="hidden items-center gap-3 sm:flex">
-              <Link
-                className={authLinkClass}
-                href="/login"
-              >
+              <Link className={authLinkClass} href="/login">
                 Login
               </Link>
               <Link
@@ -117,6 +132,7 @@ export function Navbar({
           <a
             className={`hidden sm:inline-flex ${adminLoginLinkClass}`}
             href={ADMIN_LOGIN_URL}
+            onClick={clearCustomerBrowserStorage}
           >
             Admin Login
           </a>
@@ -126,26 +142,17 @@ export function Navbar({
       <div className="flex items-center justify-center gap-4 border-t border-neutral-200 px-5 py-3 sm:hidden">
         {currentUser ? (
           <>
-            <Link
-              className={authLinkClass}
-              href="/account"
-            >
+            <Link className={authLinkClass} href="/account">
               Account
             </Link>
-            <Link
-              className={authLinkClass}
-              href="/account/orders"
-            >
+            <Link className={authLinkClass} href="/account/orders">
               Orders
             </Link>
             <LogoutButton />
           </>
         ) : (
           <>
-            <Link
-              className={authLinkClass}
-              href="/login"
-            >
+            <Link className={authLinkClass} href="/login">
               Login
             </Link>
             <Link
@@ -156,7 +163,11 @@ export function Navbar({
             </Link>
           </>
         )}
-        <a className={adminLoginLinkClass} href={ADMIN_LOGIN_URL}>
+        <a
+          className={adminLoginLinkClass}
+          href={ADMIN_LOGIN_URL}
+          onClick={clearCustomerBrowserStorage}
+        >
           Admin Login
         </a>
       </div>

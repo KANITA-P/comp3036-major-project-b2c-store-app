@@ -16,6 +16,8 @@ export function LogoutButton() {
       await fetch("/api/logout", {
         method: "DELETE",
       });
+      window.localStorage.clear();
+      window.sessionStorage.clear();
       router.push("/");
       router.refresh();
     } finally {

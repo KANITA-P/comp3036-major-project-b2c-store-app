@@ -2,6 +2,7 @@ import { client } from "@repo/db/client";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import {
+  ADMIN_AUTH_COOKIE_NAME,
   CUSTOMER_AUTH_COOKIE_NAME,
   createCustomerToken,
   getAuthCookieOptions,
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
     },
   });
 
-  if (!user) {
+  if (!user || user.role !== "USER") {
     recordFailedLogin(rateLimitKey);
     return NextResponse.json(
       { error: "Invalid email or password" },
@@ -91,6 +92,11 @@ export async function POST(request: Request) {
     token,
     getAuthCookieOptions(request),
   );
+  response.cookies.set(ADMIN_AUTH_COOKIE_NAME, "", {
+    httpOnly: true,
+    path: "/",
+    expires: new Date(0),
+  });
 
   return response;
 }
