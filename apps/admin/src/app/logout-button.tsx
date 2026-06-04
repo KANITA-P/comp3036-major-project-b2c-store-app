@@ -16,6 +16,8 @@ export function LogoutButton({ className = "" }: { className?: string }) {
       await fetch("/api/auth", {
         method: "DELETE",
       });
+      window.localStorage.clear();
+      window.sessionStorage.clear();
     } finally {
       router.push("/");
       router.refresh();
@@ -24,7 +26,12 @@ export function LogoutButton({ className = "" }: { className?: string }) {
   }
 
   return (
-    <button className={className} type="button" onClick={logout} disabled={pending}>
+    <button
+      className={className}
+      type="button"
+      onClick={logout}
+      disabled={pending}
+    >
       Logout
     </button>
   );

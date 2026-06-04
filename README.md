@@ -6,7 +6,7 @@ Threadline is a B2C clothing store prototype built for the COMP3036-FS major pro
 
 This repository is focused only on the B2C clothing store project. It was adapted from a previous assignment codebase, while the old blog application is preserved separately.
 
-The current Iteration 1 version is a semi-functional working prototype. It supports product browsing, category filtering, search, customer authentication, local cart management, mock checkout, admin authentication, and basic admin create/edit product workflows backed by PostgreSQL and Prisma.
+The current version is a working B2C store prototype. It supports product browsing, category filtering, search, customer authentication, local cart management, mock checkout with persisted order records, customer purchase history, admin authentication, product create/edit/delete workflows, and admin purchase record viewing backed by PostgreSQL and Prisma.
 
 ## Success Criteria
 
@@ -14,9 +14,11 @@ The current Iteration 1 version is a semi-functional working prototype. It suppo
 - Customers can search and filter products by category.
 - Customers can register, log in, log out, and view their session state.
 - Customers can add products to a local cart, update quantities, remove items, and see cart count/total updates.
-- Customers can complete a frontend mock checkout flow and see an order confirmation screen.
+- Customers can complete a mock checkout flow that saves an order and see an order confirmation screen.
+- Customers can view past purchases with order dates, items, quantities, and totals.
 - Admin users can log in with JWT-based authentication.
-- Admin users can view, create, and edit products.
+- Admin users can view, create, edit, and delete products.
+- Admin users can view customer purchase records.
 - Seeded product data includes realistic clothing descriptions, sizing notes, stock, categories, and matching public image URLs.
 - E2E tests verify the main customer and admin flows.
 - GitHub Actions runs database setup, seed, lint, build/test workflow automatically.
@@ -32,8 +34,9 @@ The current Iteration 1 version is a semi-functional working prototype. It suppo
 - Cart stored in `localStorage`.
 - Cart page with product images, quantities, subtotals, remove controls, and order total.
 - Mock checkout page for logged-in customers.
+- Checkout creates confirmed order and order item records in PostgreSQL and decrements product stock.
 - Order confirmation page that clears the local cart after mock payment.
-- Purchase history placeholder page for future backend order records.
+- Purchase history page showing the logged-in customer's saved orders, dates, statuses, items, quantities, and totals.
 - Cart count and total update when products are added, removed, or updated.
 - Customer registration, login, logout, and current-user session endpoint.
 - Responsive UI built with Tailwind CSS.
@@ -44,6 +47,8 @@ The current Iteration 1 version is a semi-functional working prototype. It suppo
 - Admin product list.
 - Product creation page.
 - Product edit page.
+- Product delete workflow.
+- Customer purchase records page.
 - Product image URL validation and preview.
 
 ### Database
@@ -51,13 +56,15 @@ The current Iteration 1 version is a semi-functional working prototype. It suppo
 - PostgreSQL database.
 - Prisma schema and migrations.
 - Seeded categories and products.
+- Customer users, admin users, orders, order items, products, and categories are stored in PostgreSQL.
+- Product, category, user, order, and order item relationships are modeled in Prisma.
 - Product stock remains a simple quantity field.
 - Clothing sizing information is stored in product descriptions, not as separate size variants.
 
 ### Testing
 
-- 18 passing Playwright E2E tests.
-- Tests cover customer auth, search, category filtering, cart count, cart page behavior, mock checkout, admin login, admin product list, and opening the edit product page.
+- 43 passing Playwright E2E tests.
+- Tests cover customer auth, search, category filtering, product detail pages, cart behavior, mock checkout, persisted purchase history, checkout API validation, admin login, admin product list, create/edit/delete product management, admin purchase records, and access-control cases.
 - Web unit seed-data test with Vitest.
 - CI runs tests automatically.
 
@@ -69,12 +76,14 @@ Completed:
 
 - Storefront browsing/search/filtering.
 - Cart page, cart count, and local cart interaction.
-- Frontend mock checkout and order confirmation.
-- Purchase history placeholder page.
+- Mock checkout with persisted order records and order confirmation.
+- Customer purchase history page.
 - Customer registration/login/logout.
 - Admin JWT login.
 - Admin product list.
 - Admin create/edit product pages.
+- Admin product delete workflow.
+- Admin purchase records page.
 - PostgreSQL and Prisma integration.
 - Prisma seed data for categories and products.
 - Playwright E2E coverage for core flows.
@@ -82,21 +91,12 @@ Completed:
 
 Not completed yet:
 
-- Persistent checkout/order storage.
 - Payment is currently a mock prototype flow; no real Stripe/PayPal integration is planned unless required.
-- Database-backed purchase history.
-- Admin purchase/order records.
-- Product delete workflow.
-- Persistent customer cart records.
 - Production deployment.
 
 ## Remaining Work for Iteration 2/Final
 
-- Implement database-backed order creation after mock checkout.
-- Add persisted purchase history for customers.
-- Add admin order/purchase management.
 - Keep payment as a mock prototype flow unless the final marking requirements ask for a real provider.
-- Add product deletion if required by final scope.
 - Improve cart persistence beyond `localStorage`.
 - Add richer validation and error states for product/admin forms.
 - Deploy the web and admin applications.
@@ -134,21 +134,28 @@ cd ../..
 
 ## Environment Variables
 
-Create `.env` files from the provided `.env.example` files where required. At minimum, the database package and apps need access to the database URL and JWT secret.
+Create `.env` files from the provided `.env.example` files where required. At minimum, the database package and apps need access to the database URL and JWT secret. The web app needs its own `apps/web/.env` when you run it directly.
 
 Example:
 
 ```env
 DATABASE_URL="postgresql://YOUR_USERNAME@localhost:5432/threadline_store?schema=public"
-JWT_SECRET="your-secret-key"
-PASSWORD="123"
+JWT_SECRET="replace-with-a-long-random-customer-secret"
+NEXT_PUBLIC_ADMIN_URL="http://localhost:3002"
+NEXT_PUBLIC_WEB_URL="http://localhost:3001"
+ADMIN_EMAIL="admin@threadline.com"
+ADMIN_PASSWORD="replace-with-a-strong-admin-password"
+ADMIN_JWT_SECRET="replace-with-a-long-random-admin-secret"
 ```
 
 Notes:
 
 - `DATABASE_URL` is used by Prisma and the Next.js apps.
-- `JWT_SECRET` is used for customer/admin token signing.
-- `PASSWORD` is used by the admin login prototype.
+- `JWT_SECRET` is required for customer token signing. The app does not fall back to a default customer JWT secret.
+- `NEXT_PUBLIC_ADMIN_URL` is used by the storefront navbar's Admin Login link. Use `http://localhost:3002` locally and the deployed admin app URL in production.
+- `NEXT_PUBLIC_WEB_URL` is used by the admin app's View Store link. Use `http://localhost:3001` locally and the deployed storefront URL in production.
+- `ADMIN_EMAIL` and `ADMIN_PASSWORD` are used by the database seed to create the single admin user. The password is hashed with bcrypt before storage.
+- `ADMIN_JWT_SECRET` is used for admin token signing and should be separate from the customer `JWT_SECRET`.
 
 ## Database Setup
 
@@ -191,6 +198,10 @@ Local URLs:
 - Web storefront: [http://localhost:3001](http://localhost:3001)
 - Admin app: [http://localhost:3002](http://localhost:3002)
 
+The storefront navbar includes an **Admin Login** link that opens the separate admin app. Set `NEXT_PUBLIC_ADMIN_URL` in `apps/web/.env` to control the destination. If it is not set, the web app falls back to `http://localhost:3002`.
+
+The admin dashboard, product pages, and purchase records page include a **View Store** link that opens the customer storefront. Set `NEXT_PUBLIC_WEB_URL` in `apps/admin/.env` to control the destination. If it is not set, the admin app falls back to `http://localhost:3001`.
+
 ## Running Tests
 
 Run the full Turbo test pipeline:
@@ -198,6 +209,18 @@ Run the full Turbo test pipeline:
 ```bash
 pnpm turbo test
 ```
+
+Run the autograding test groups separately:
+
+```bash
+pnpm turbo test-1
+pnpm turbo test-2
+pnpm turbo test-3
+```
+
+- `test-1` runs customer storefront tests for auth, browsing, filtering, search, cart, checkout, and purchase history.
+- `test-2` runs admin dashboard tests for admin login, product management, deletion, handoff navigation, and admin order records.
+- `test-3` runs API tests for public products, customer auth APIs, checkout/order creation, and admin product APIs.
 
 Run a production build:
 
@@ -213,8 +236,8 @@ pnpm --filter @repo/playwright exec playwright test
 
 Current E2E status:
 
-- 18 Playwright tests passing.
-- Coverage includes auth, search, filtering, cart count, cart page loading, add/remove cart behavior, checkout login redirect, logged-in checkout access, mock order confirmation, admin login, admin product list, and admin edit-page access.
+- Playwright tests are organised into `test-1`, `test-2`, and `test-3` autograding groups.
+- Coverage includes customer auth, admin auth, search, filtering, product browsing, product detail pages, cart count, cart page loading, add/remove cart behavior, quantity limits, checkout login redirect, logged-in checkout access, checkout API validation, mock order confirmation, persisted purchase history, public product API, customer auth APIs, admin product APIs, admin product list, admin create/edit/delete flows, admin purchase records, and access-control cases.
 
 If a dev server is already running on ports `3001` or `3002`, stop it before running the Playwright command that starts its own servers.
 
@@ -231,13 +254,48 @@ The CI workflow:
 - Seeds the database.
 - Runs web and admin lint checks.
 - Installs the Playwright Chromium browser.
-- Runs `pnpm turbo test`.
+- Runs `pnpm turbo test-1`, `pnpm turbo test-2`, and `pnpm turbo test-3` as separate autograding steps.
 
 ## API Documentation
 
 Only currently implemented API routes are listed here.
 
 ### Web App API
+
+#### `GET /api/products`
+
+Returns all available products from the database.
+
+The `stockQuantity` response field is mapped from the database `Product.stock` field.
+
+Request:
+
+- No request body required.
+- Authentication is not required.
+
+Response example:
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Black Denim Jacket",
+    "description": "Size: M. Fit: relaxed. Condition: Used - Good.",
+    "price": 89.99,
+    "image": "https://images.unsplash.com/example",
+    "stockQuantity": 5,
+    "category": {
+      "id": 1,
+      "name": "Jackets"
+    }
+  }
+]
+```
+
+Responses:
+
+- `200` with an array of product objects
+- `500` with `{ "error": "Unable to load products" }` if products cannot be loaded
 
 #### `POST /api/register`
 
@@ -262,7 +320,7 @@ Responses:
 
 #### `POST /api/login`
 
-Logs in a customer and sets an auth cookie.
+Logs in a customer and sets an HTTP-only auth cookie. Customer JWTs include an expiry and `aud: "customer"`.
 
 Request body:
 
@@ -278,6 +336,7 @@ Responses:
 - `200` with `{ "success": true, "user": ... }`
 - `400` for missing fields
 - `401` for invalid credentials
+- `429` for too many login attempts
 
 #### `DELETE /api/logout`
 
@@ -301,6 +360,78 @@ Response:
 
 or a logged-in user object.
 
+#### `POST /api/admin-storefront-session`
+
+Creates a storefront session from a short-lived admin handoff token. This endpoint is used by the admin-to-storefront handoff to set the storefront `customer_auth_token` while clearing any stale admin cookie on the storefront origin.
+
+Purpose:
+
+- Supports secure navigation from the admin app to the storefront.
+- Prevents admin/customer session cookie conflicts.
+- Maintains separate customer and admin authentication states.
+
+Request body:
+
+```json
+{
+  "token": "short-lived-admin-storefront-handoff-token"
+}
+```
+
+Authentication requirements:
+
+- Requires a valid signed handoff token created by the admin app.
+- The token must have `aud: "admin-storefront-handoff"` and `role: "ADMIN"`.
+- The matching database user must still exist and have `role: "ADMIN"`.
+
+Response example:
+
+```json
+{
+  "success": true,
+  "user": {
+    "id": 1,
+    "name": "Threadline Admin",
+    "email": "admin@threadline.com",
+    "role": "ADMIN"
+  }
+}
+```
+
+Responses:
+
+- `200` with `{ "success": true, "user": ... }` and a storefront session cookie
+- `401` with `{ "error": "Invalid or expired storefront session token" }` for missing, invalid, expired, or unauthorized tokens
+
+Browser redirect support:
+
+- `GET /api/admin-storefront-session?token=...` is also supported for the admin dashboard's **View Store** redirect flow.
+- Valid tokens redirect to `/` and set the storefront session cookie.
+- Invalid tokens redirect to `/` without creating a storefront session.
+
+#### `POST /api/orders`
+
+Creates a confirmed mock checkout order for the logged-in customer. The endpoint validates cart items against current products, rejects empty or invalid carts, saves order and order item records, and decrements stock in a database transaction.
+
+Request body:
+
+```json
+{
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 2
+    }
+  ]
+}
+```
+
+Responses:
+
+- `200` with `{ "success": true, "order": { "id": 1, "total": 378, "count": 2 } }`
+- `400` for empty carts, invalid products, insufficient stock, or changed stock
+- `401` for unauthenticated requests
+
 #### `GET /api/seed`
 
 Runs the seed function and returns `{ "message": "Seeded" }`. This exists for development/test support.
@@ -309,13 +440,14 @@ Runs the seed function and returns `{ "message": "Seeded" }`. This exists for de
 
 #### `POST /api/auth`
 
-Logs in an admin user using the configured `PASSWORD` and sets an auth cookie.
+Logs in the seeded admin user with email and password, then sets an HTTP-only admin auth cookie. The matching database user must have `role: "ADMIN"`. Admin JWTs include an expiry and `aud: "admin"`.
 
 Request body for JSON requests:
 
 ```json
 {
-  "password": "123"
+  "email": "admin@threadline.com",
+  "password": "replace-with-a-strong-admin-password"
 }
 ```
 
@@ -324,7 +456,8 @@ Responses:
 - `200` with `{ "success": true }` for JSON requests
 - `303` redirect for form submissions
 - `400` for invalid JSON requests
-- `401` for invalid password
+- `401` for invalid credentials
+- `429` for too many login attempts
 
 #### `DELETE /api/auth`
 
@@ -333,6 +466,46 @@ Logs out the admin user by clearing the auth cookie.
 Response:
 
 - `200` with `{ "success": true }`
+
+#### `POST /api/storefront-session`
+
+Creates a short-lived admin-to-storefront handoff URL. This endpoint is used when an authenticated admin wants to navigate from the admin dashboard to the customer storefront and arrive signed in to the storefront as an admin storefront session.
+
+Purpose:
+
+- Allows secure storefront authentication from the admin application.
+- Keeps admin and storefront session cookies separate.
+- Supports session handoff between the admin app and storefront without allowing admin login through the storefront login form.
+
+Request:
+
+- No request body required.
+
+Authentication requirements:
+
+- Requires a valid admin session cookie.
+- The admin token must have `aud: "admin"` and `role: "ADMIN"`.
+- The matching database user must still exist and have `role: "ADMIN"`.
+
+Response example:
+
+```json
+{
+  "success": true,
+  "redirectUrl": "http://localhost:3001/api/admin-storefront-session?token=..."
+}
+```
+
+Responses:
+
+- `200` with `{ "success": true, "redirectUrl": "..." }`
+- `401` with `{ "error": "Unauthorized" }` when the admin session is missing or invalid
+
+Browser redirect support:
+
+- `GET /api/storefront-session` is also supported for the admin dashboard's **View Store** link.
+- Authenticated admins are redirected to the storefront handoff receiver.
+- Unauthenticated visitors are redirected to the storefront without a handoff token.
 
 #### `POST /api/products`
 
@@ -380,14 +553,21 @@ Responses:
 - `400` for invalid product id or product data
 - `401` for unauthenticated requests
 
+#### `DELETE /api/products/[id]`
+
+Deletes a product. Requires admin authentication.
+
+Responses:
+
+- `200` with `{ "success": true }`
+- `400` for invalid product id
+- `401` for unauthenticated requests
+- `404` when the product does not exist
+- `409` when the product has order history and cannot be safely deleted
+
 ### Planned API Work
 
-The following API areas are planned for Iteration 2/final and are not implemented yet:
-
-- Database-backed checkout/order creation.
-- Customer purchase history backed by stored order records.
-- Admin purchase/order records.
-- Product delete endpoint.
+The core auth, product browsing API, checkout/order creation, customer order history pages, admin product APIs, and admin order record pages are implemented for the university project scope.
 
 ## Project Structure
 
@@ -419,7 +599,7 @@ Deployment requirements for final:
 - Hosted PostgreSQL database.
 - Production `DATABASE_URL`.
 - Production `JWT_SECRET`.
-- Secure admin password configuration.
+- Production `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `ADMIN_JWT_SECRET`.
 - Hosted web and admin Next.js applications.
 - Prisma migrations applied in the deployment environment.
 
@@ -434,8 +614,9 @@ The final demo should show:
 - Adding products to the cart.
 - Updating/removing cart items.
 - Completing the mock checkout flow.
-- Viewing the order confirmation and purchase history placeholder.
+- Viewing the order confirmation and persisted purchase history.
 - Admin login.
 - Admin product list.
-- Product creation/editing.
+- Product creation/editing/deletion.
+- Admin purchase records.
 - E2E tests or CI status.

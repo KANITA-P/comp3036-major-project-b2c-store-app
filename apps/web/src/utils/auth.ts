@@ -3,6 +3,9 @@ import { cookies } from "next/headers";
 import { signJwt, verifyJwt } from "./jwt";
 
 export const CUSTOMER_AUTH_COOKIE_NAME = "customer_auth_token";
+export const ADMIN_AUTH_COOKIE_NAME = "auth_token";
+export const CUSTOMER_TOKEN_AUDIENCE = "customer";
+export const CUSTOMER_TOKEN_MAX_AGE = 60 * 60 * 24 * 7;
 
 export type CustomerSession = {
   id: number;
@@ -12,7 +15,13 @@ export type CustomerSession = {
 };
 
 export function getJwtSecret() {
-  return process.env.JWT_SECRET || "threadline-dev-secret";
+  const secret = process.env.JWT_SECRET;
+
+  if (!secret) {
+    throw new Error("JWT_SECRET is required");
+  }
+
+  return secret;
 }
 
 export function createCustomerToken(user: CustomerSession) {
@@ -22,9 +31,10 @@ export function createCustomerToken(user: CustomerSession) {
       name: user.name,
       email: user.email,
       role: user.role,
+      aud: CUSTOMER_TOKEN_AUDIENCE,
     },
     getJwtSecret(),
-    60 * 60 * 24 * 7,
+    CUSTOMER_TOKEN_MAX_AGE,
   );
 }
 
@@ -50,6 +60,8 @@ export async function getCurrentUser(): Promise<CustomerSession | null> {
     const userId = Number(payload.sub);
 
     if (!Number.isInteger(userId) || userId < 1) return null;
+    if (payload.aud !== CUSTOMER_TOKEN_AUDIENCE) return null;
+    if (payload.role !== "USER" && payload.role !== "ADMIN") return null;
 
     const user = await client.db.user.findUnique({
       where: { id: userId },
@@ -61,7 +73,14 @@ export async function getCurrentUser(): Promise<CustomerSession | null> {
       },
     });
 
-    return user;
+    if (!user) return null;
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
   } catch {
     return null;
   }

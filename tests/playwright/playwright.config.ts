@@ -1,9 +1,16 @@
 import { defineConfig, devices } from "@playwright/test";
-import "dotenv/config";
+import { config as loadEnv } from "dotenv";
+import path from "node:path";
+
+loadEnv({ path: path.resolve(process.cwd(), "../../.env") });
 
 process.env.E2E ??= "true";
-process.env.PASSWORD ??= "123";
+process.env.ADMIN_EMAIL ??= "admin@threadline.com";
+process.env.ADMIN_PASSWORD ??= "test-admin-password";
+process.env.ADMIN_JWT_SECRET ??= "test-admin-secret";
 process.env.JWT_SECRET ??= "secret";
+process.env.NEXT_PUBLIC_ADMIN_URL ??= "http://localhost:3002";
+process.env.NEXT_PUBLIC_WEB_URL ??= "http://localhost:3001";
 
 export default defineConfig({
   testDir: "./tests",
@@ -19,19 +26,27 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "web-chromium",
-      testDir: "./tests/web",
+      name: "test-1",
+      testDir: "./tests/test-1",
       use: {
         ...devices["Desktop Chrome"],
         baseURL: "http://localhost:3001",
       },
     },
     {
-      name: "admin-chromium",
-      testDir: "./tests/admin",
+      name: "test-2",
+      testDir: "./tests/test-2",
       use: {
         ...devices["Desktop Chrome"],
         baseURL: "http://localhost:3002",
+      },
+    },
+    {
+      name: "test-3",
+      testDir: "./tests/test-3",
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: "http://localhost:3001",
       },
     },
   ],

@@ -21,7 +21,9 @@ function buildTextVariants(value: string) {
   if (!trimmed) return [];
 
   const spaced = trimmed.replace(/-/g, " ");
-  const titleCase = spaced.replace(/\b\w/g, (character) => character.toUpperCase());
+  const titleCase = spaced.replace(/\b\w/g, (character) =>
+    character.toUpperCase(),
+  );
 
   return [...new Set([trimmed, spaced, titleCase])];
 }
@@ -106,4 +108,29 @@ export async function getProducts(filters: ProductFilters = {}) {
       return matchesCategory && matchesQuery;
     });
   }
+}
+
+export async function getProductById(id: number): Promise<StoreProduct | null> {
+  if (!Number.isInteger(id) || id < 1) return null;
+
+  const product = await client.db.product.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      category: true,
+    },
+  });
+
+  if (!product) return null;
+
+  return {
+    id: product.id,
+    name: product.name,
+    description: product.description,
+    price: Number(product.price),
+    image: product.image,
+    stock: product.stock,
+    category: product.category.name,
+  };
 }

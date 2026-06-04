@@ -30,7 +30,7 @@ type AdminListProps = {
 };
 
 export function AdminList({ products }: AdminListProps) {
-  const [items] = useState(() =>
+  const [items, setItems] = useState(() =>
     products.map((product) => ({
       ...product,
       createdAt: new Date(product.createdAt),
@@ -39,8 +39,42 @@ export function AdminList({ products }: AdminListProps) {
   const [query, setQuery] = useState("");
   const [categoryQuery, setCategoryQuery] = useState("all");
   const [sortBy, setSortBy] = useState("created-desc");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const categories = Array.from(new Set(items.map((item) => item.category))).sort();
+  async function deleteProduct(product: AdminProduct) {
+    const confirmed = window.confirm(`Delete ${product.name}?`);
+
+    if (!confirmed) return;
+
+    setDeletingId(product.id);
+    setMessage("");
+    setError("");
+
+    try {
+      const response = await fetch(`/api/products/${product.id}`, {
+        method: "DELETE",
+      });
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        setError(body?.error ?? "Unable to delete product");
+        return;
+      }
+
+      setItems((currentItems) =>
+        currentItems.filter((item) => item.id !== product.id),
+      );
+      setMessage(`${product.name} deleted`);
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  const categories = Array.from(
+    new Set(items.map((item) => item.category)),
+  ).sort();
   const normalizedQuery = query.trim().toLowerCase();
 
   const filteredProducts = items.filter((product) => {
@@ -126,6 +160,11 @@ export function AdminList({ products }: AdminListProps) {
         </div>
       </section>
 
+      <section className={styles.statusRegion} aria-live="polite">
+        {message ? <p className={styles.success}>{message}</p> : null}
+        {error ? <p className={styles.error}>{error}</p> : null}
+      </section>
+
       <section className={styles.list}>
         {sortedProducts.map((product) => (
           <article
@@ -140,7 +179,10 @@ export function AdminList({ products }: AdminListProps) {
               src={product.image}
             />
             <div className={styles.cardBody}>
-              <Link className={styles.titleLink} href={`/product/${product.id}`}>
+              <Link
+                className={styles.titleLink}
+                href={`/product/${product.id}`}
+              >
                 {product.name}
               </Link>
               <p className={styles.meta}>{product.category}</p>
@@ -154,6 +196,25 @@ export function AdminList({ products }: AdminListProps) {
                   year: "numeric",
                 })}
               </p>
+              <div className={styles.cardActions}>
+                <Link
+                  className={styles.secondaryLink}
+                  href={`/product/${product.id}`}
+                >
+                  Edit
+                </Link>
+                <button
+                  aria-label={`Delete ${product.name}`}
+                  className={styles.dangerButton}
+                  disabled={deletingId === product.id}
+                  onClick={() => {
+                    void deleteProduct(product);
+                  }}
+                  type="button"
+                >
+                  {deletingId === product.id ? "Deleting" : "Delete"}
+                </button>
+              </div>
             </div>
           </article>
         ))}

@@ -2,12 +2,16 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "globalEnv": [
-    "PASSWORD",
+    "ADMIN_EMAIL",
+    "ADMIN_PASSWORD",
+    "ADMIN_JWT_SECRET",
     "VITEST",
     "E2E",
     "TEST_DATABASE_URL",
     "DATABASE_URL",
     "JWT_SECRET",
+    "NEXT_PUBLIC_ADMIN_URL",
+    "NEXT_PUBLIC_WEB_URL",
     "NODE_ENV"
   ],
   "tasks": {
@@ -27,6 +31,18 @@
       "persistent": true
     },
     "test": {
+      "dependsOn": ["^build", "check-types"],
+      "outputs": []
+    },
+    "test-1": {
+      "dependsOn": ["^build", "check-types"],
+      "outputs": []
+    },
+    "test-2": {
+      "dependsOn": ["^build", "check-types"],
+      "outputs": []
+    },
+    "test-3": {
       "dependsOn": ["^build", "check-types"],
       "outputs": []
     },

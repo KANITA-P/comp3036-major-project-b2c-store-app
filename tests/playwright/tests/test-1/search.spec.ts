@@ -24,27 +24,54 @@ test.describe("Product search", () => {
 
     await expect(page).toHaveURL(/\/search\?q=Jacket$/);
     await expect(
-      page.getByTestId("product-card").filter({ hasText: "Stormline Shell Jacket" }),
+      page
+        .getByTestId("product-card")
+        .filter({ hasText: "Stormline Shell Jacket" }),
     ).toBeVisible();
     await expect(
-      page.getByTestId("product-card").filter({ hasText: "Wool Blend Overshirt" }),
+      page
+        .getByTestId("product-card")
+        .filter({ hasText: "Wool Blend Overshirt" }),
     ).toBeVisible();
     await expect(
-      page.getByTestId("product-card").filter({ hasText: "Everyday Heavy Hoodie" }),
+      page
+        .getByTestId("product-card")
+        .filter({ hasText: "Everyday Heavy Hoodie" }),
     ).toHaveCount(0);
+  });
+
+  test("searching by exact product name works", async ({ page }) => {
+    await page.goto("/");
+
+    await page.getByPlaceholder("Search products").fill("Canvas Crossbody Bag");
+    await page.getByPlaceholder("Search products").press("Enter");
+
+    await expect(page).toHaveURL(/\/search\?q=Canvas%20Crossbody%20Bag$/);
+    await expect(page.getByTestId("product-card")).toHaveCount(1);
+    await expect(
+      page
+        .getByTestId("product-card")
+        .filter({ hasText: "Canvas Crossbody Bag" }),
+    ).toBeVisible();
   });
 
   test("search query URL loads hoodie products", async ({ page }) => {
     await page.goto("/search?q=Hoodies");
 
     await expect(
-      page.getByTestId("product-card").filter({ hasText: "Everyday Heavy Hoodie" }),
+      page
+        .getByTestId("product-card")
+        .filter({ hasText: "Everyday Heavy Hoodie" }),
     ).toBeVisible();
     await expect(
-      page.getByTestId("product-card").filter({ hasText: "Quarter Zip Travel Hoodie" }),
+      page
+        .getByTestId("product-card")
+        .filter({ hasText: "Quarter Zip Travel Hoodie" }),
     ).toBeVisible();
     await expect(
-      page.getByTestId("product-card").filter({ hasText: "Stormline Shell Jacket" }),
+      page
+        .getByTestId("product-card")
+        .filter({ hasText: "Stormline Shell Jacket" }),
     ).toHaveCount(0);
   });
 

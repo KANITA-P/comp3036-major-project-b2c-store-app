@@ -2,10 +2,17 @@ import { client } from "@repo/db/client";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import {
+  ADMIN_AUTH_COOKIE_NAME,
   CUSTOMER_AUTH_COOKIE_NAME,
   createCustomerToken,
   getAuthCookieOptions,
 } from "@/utils/auth";
+import {
+  clearLoginRateLimit,
+  getLoginRateLimitKey,
+  isLoginRateLimited,
+  recordFailedLogin,
+} from "@/utils/rate-limit";
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
@@ -24,6 +31,15 @@ export async function POST(request: Request) {
     );
   }
 
+  const rateLimitKey = getLoginRateLimitKey(request, email);
+
+  if (isLoginRateLimited(rateLimitKey)) {
+    return NextResponse.json(
+      { error: "Too many login attempts. Please try again later." },
+      { status: 429 },
+    );
+  }
+
   const user = await client.db.user.findUnique({
     where: { email },
     select: {
@@ -35,7 +51,8 @@ export async function POST(request: Request) {
     },
   });
 
-  if (!user) {
+  if (!user || user.role !== "USER") {
+    recordFailedLogin(rateLimitKey);
     return NextResponse.json(
       { error: "Invalid email or password" },
       { status: 401 },
@@ -45,6 +62,7 @@ export async function POST(request: Request) {
   const passwordMatches = await bcrypt.compare(password, user.password);
 
   if (!passwordMatches) {
+    recordFailedLogin(rateLimitKey);
     return NextResponse.json(
       { error: "Invalid email or password" },
       { status: 401 },
@@ -67,11 +85,18 @@ export async function POST(request: Request) {
     },
   });
 
+  clearLoginRateLimit(rateLimitKey);
+
   response.cookies.set(
     CUSTOMER_AUTH_COOKIE_NAME,
     token,
     getAuthCookieOptions(request),
   );
+  response.cookies.set(ADMIN_AUTH_COOKIE_NAME, "", {
+    httpOnly: true,
+    path: "/",
+    expires: new Date(0),
+  });
 
   return response;
 }

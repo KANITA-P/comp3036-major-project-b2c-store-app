@@ -15,7 +15,11 @@ import {
   writeCart,
 } from "@/utils/cart";
 
-export function CheckoutClient({ currentUser }: { currentUser: CustomerSession }) {
+export function CheckoutClient({
+  currentUser,
+}: {
+  currentUser: CustomerSession;
+}) {
   const router = useRouter();
   const [cart, setCart] = useState<CartLine[]>([]);
   const [error, setError] = useState("");
@@ -27,7 +31,7 @@ export function CheckoutClient({ currentUser }: { currentUser: CustomerSession }
     setCart(readCart());
   }, []);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
 
@@ -46,16 +50,41 @@ export function CheckoutClient({ currentUser }: { currentUser: CustomerSession }
     }
 
     setSubmitting(true);
-    window.sessionStorage.setItem(
-      "threadline-last-order",
-      JSON.stringify({
-        count: cartCount,
-        total: cartTotal,
-        placedAt: new Date().toISOString(),
-      }),
-    );
-    writeCart([]);
-    router.push("/order-confirmation");
+
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items: cart.map((item) => ({
+            productId: item.id,
+            quantity: item.quantity,
+          })),
+        }),
+      });
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        setError(body?.error ?? "Unable to place order.");
+        return;
+      }
+
+      window.sessionStorage.setItem(
+        "threadline-last-order",
+        JSON.stringify({
+          id: body.order.id,
+          count: body.order.count,
+          total: body.order.total,
+          placedAt: new Date().toISOString(),
+        }),
+      );
+      writeCart([]);
+      router.push("/order-confirmation");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -65,14 +94,14 @@ export function CheckoutClient({ currentUser }: { currentUser: CustomerSession }
       <main className="mx-auto grid max-w-7xl gap-8 px-5 py-10 lg:grid-cols-[1fr_420px] lg:px-8">
         <section>
           <p className="text-sm font-bold uppercase tracking-normal text-neutral-500">
-            Mock Checkout
+            Checkout
           </p>
           <h1 className="mt-1 text-4xl font-black tracking-normal">
             Complete your purchase
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-600">
-            This university prototype uses a mock payment only. No real card or
-            payment provider is used.
+            Enter your delivery details and choose a payment method to place
+            your order.
           </p>
 
           <form
@@ -123,8 +152,8 @@ export function CheckoutClient({ currentUser }: { currentUser: CustomerSession }
                   id="payment-method"
                   name="paymentMethod"
                 >
-                  <option>Mock card ending 4242</option>
-                  <option>Mock Pay balance</option>
+                  <option>Card ending 4242</option>
+                  <option>Store credit balance</option>
                 </select>
               </div>
             </div>
@@ -180,8 +209,8 @@ export function CheckoutClient({ currentUser }: { currentUser: CustomerSession }
             </div>
           ) : (
             <p className="mt-5 rounded-lg border border-dashed border-neutral-300 p-5 text-sm leading-6 text-neutral-600">
-              Your cart is empty. Return to the storefront to add products before
-              mock checkout.
+              Your cart is empty. Return to the storefront to add products
+              before checkout.
             </p>
           )}
         </aside>

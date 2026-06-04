@@ -19,9 +19,6 @@ export const createClient = () => {
     datasourceUrl: databaseUrl,
   });
 
-  console.log("Connected to database");
-  console.log(databaseUrl);
-
   global.prisma = prisma;
   return prisma;
 };

@@ -29,7 +29,11 @@ jobs:
       E2E: true
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/threadline_store?schema=public
       JWT_SECRET: test-secret
-      PASSWORD: "123"
+      NEXT_PUBLIC_ADMIN_URL: http://localhost:3002
+      NEXT_PUBLIC_WEB_URL: http://localhost:3001
+      ADMIN_EMAIL: admin@threadline.com
+      ADMIN_PASSWORD: test-admin-password
+      ADMIN_JWT_SECRET: test-admin-secret
       SKIP_ENV_VALIDATION: true
 
     steps:
@@ -68,5 +72,11 @@ jobs:
         working-directory: tests/playwright
         run: pnpm playwright install chromium --with-deps
 
-      - name: Run Turbo tests
-        run: pnpm turbo test
+      - name: Part 1 - Customer tests
+        run: pnpm turbo test-1
+
+      - name: Part 2 - Admin tests
+        run: pnpm turbo test-2
+
+      - name: Part 3 - API tests
+        run: pnpm turbo test-3

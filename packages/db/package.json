@@ -34,7 +34,9 @@
   "prisma": {
     "seed": "node dist/run-seed.js"
   },
-  "dependencies": {},
+  "dependencies": {
+    "bcryptjs": "^3.0.3"
+  },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
