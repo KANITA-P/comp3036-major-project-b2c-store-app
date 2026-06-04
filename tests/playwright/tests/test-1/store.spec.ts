@@ -6,29 +6,6 @@ test.beforeAll(async () => {
 });
 
 test.describe("B2C store homepage", () => {
-  test("public products API returns database products", async ({ request }) => {
-    const response = await request.get("/api/products");
-    const products = await response.json();
-
-    expect(response.status()).toBe(200);
-    expect(Array.isArray(products)).toBe(true);
-    expect(products.length).toBeGreaterThanOrEqual(8);
-    expect(products[0]).toEqual(
-      expect.objectContaining({
-        id: expect.any(Number),
-        name: expect.any(String),
-        description: expect.any(String),
-        price: expect.any(Number),
-        image: expect.any(String),
-        stockQuantity: expect.any(Number),
-        category: expect.objectContaining({
-          id: expect.any(Number),
-          name: expect.any(String),
-        }),
-      }),
-    );
-  });
-
   test("shows the store homepage and seeded products", async ({ page }) => {
     await page.goto("/");
 

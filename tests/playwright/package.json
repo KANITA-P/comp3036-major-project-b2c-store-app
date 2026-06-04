@@ -4,6 +4,9 @@
   "main": "index.js",
   "scripts": {
     "test": "pnpm playwright test",
+    "test-1": "pnpm playwright test --project=test-1",
+    "test-2": "pnpm playwright test --project=test-2",
+    "test-3": "pnpm playwright test --project=test-3",
     "test:store": "pnpm playwright test",
     "ui": "pnpm playwright test --ui"
   },

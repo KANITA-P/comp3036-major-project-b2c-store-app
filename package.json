@@ -7,6 +7,9 @@
     "lint": "turbo lint",
     "check-types": "turbo check-types",
     "test": "turbo test",
+    "test-1": "turbo test-1",
+    "test-2": "turbo test-2",
+    "test-3": "turbo test-3",
     "test:e2e": "pnpm --filter @repo/playwright test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },

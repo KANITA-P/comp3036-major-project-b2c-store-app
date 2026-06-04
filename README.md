@@ -210,6 +210,18 @@ Run the full Turbo test pipeline:
 pnpm turbo test
 ```
 
+Run the autograding test groups separately:
+
+```bash
+pnpm turbo test-1
+pnpm turbo test-2
+pnpm turbo test-3
+```
+
+- `test-1` runs customer storefront tests for auth, browsing, filtering, search, cart, checkout, and purchase history.
+- `test-2` runs admin dashboard tests for admin login, product management, deletion, handoff navigation, and admin order records.
+- `test-3` runs API tests for public products, customer auth APIs, checkout/order creation, and admin product APIs.
+
 Run a production build:
 
 ```bash
@@ -224,8 +236,8 @@ pnpm --filter @repo/playwright exec playwright test
 
 Current E2E status:
 
-- 43 Playwright tests passing.
-- Coverage includes customer auth, admin auth, search, filtering, product browsing, product detail pages, cart count, cart page loading, add/remove cart behavior, quantity limits, checkout login redirect, logged-in checkout access, checkout API validation, mock order confirmation, persisted purchase history, admin product list, admin create/edit/delete flows, admin purchase records, and access-control cases.
+- Playwright tests are organised into `test-1`, `test-2`, and `test-3` autograding groups.
+- Coverage includes customer auth, admin auth, search, filtering, product browsing, product detail pages, cart count, cart page loading, add/remove cart behavior, quantity limits, checkout login redirect, logged-in checkout access, checkout API validation, mock order confirmation, persisted purchase history, public product API, customer auth APIs, admin product APIs, admin product list, admin create/edit/delete flows, admin purchase records, and access-control cases.
 
 If a dev server is already running on ports `3001` or `3002`, stop it before running the Playwright command that starts its own servers.
 
@@ -242,7 +254,7 @@ The CI workflow:
 - Seeds the database.
 - Runs web and admin lint checks.
 - Installs the Playwright Chromium browser.
-- Runs `pnpm turbo test`.
+- Runs `pnpm turbo test-1`, `pnpm turbo test-2`, and `pnpm turbo test-3` as separate autograding steps.
 
 ## API Documentation
 

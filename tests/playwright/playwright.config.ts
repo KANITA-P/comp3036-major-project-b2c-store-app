@@ -26,19 +26,27 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "web-chromium",
-      testDir: "./tests/web",
+      name: "test-1",
+      testDir: "./tests/test-1",
       use: {
         ...devices["Desktop Chrome"],
         baseURL: "http://localhost:3001",
       },
     },
     {
-      name: "admin-chromium",
-      testDir: "./tests/admin",
+      name: "test-2",
+      testDir: "./tests/test-2",
       use: {
         ...devices["Desktop Chrome"],
         baseURL: "http://localhost:3002",
+      },
+    },
+    {
+      name: "test-3",
+      testDir: "./tests/test-3",
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: "http://localhost:3001",
       },
     },
   ],

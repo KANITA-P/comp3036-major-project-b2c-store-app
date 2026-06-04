@@ -34,6 +34,18 @@
       "dependsOn": ["^build", "check-types"],
       "outputs": []
     },
+    "test-1": {
+      "dependsOn": ["^build", "check-types"],
+      "outputs": []
+    },
+    "test-2": {
+      "dependsOn": ["^build", "check-types"],
+      "outputs": []
+    },
+    "test-3": {
+      "dependsOn": ["^build", "check-types"],
+      "outputs": []
+    },
     "dev:test": {
       "dependsOn": ["check-types"]
     },
