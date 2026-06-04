@@ -592,14 +592,21 @@ tests/
 
 ## Deployment
 
-Production deployment is planned for the final submission. The applications are currently verified locally and through GitHub Actions CI.
+The project can be deployed as two separate Next.js applications: the storefront app and the admin app.
 
-Deployment requirements for final:
+Deployment links:
+
+- Storefront: https://threadline-web-one.vercel.app/
+- Admin: https://threadline-admin.vercel.app/
+
+Deployment requirements:
 
 - Hosted PostgreSQL database.
 - Production `DATABASE_URL`.
 - Production `JWT_SECRET`.
 - Production `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `ADMIN_JWT_SECRET`.
+- Storefront `NEXT_PUBLIC_ADMIN_URL` set to the deployed admin app URL.
+- Admin `NEXT_PUBLIC_WEB_URL` set to the deployed storefront app URL.
 - Hosted web and admin Next.js applications.
 - Prisma migrations applied in the deployment environment.
 
