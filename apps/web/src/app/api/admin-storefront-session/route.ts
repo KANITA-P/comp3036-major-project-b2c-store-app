@@ -10,6 +10,20 @@ import {
 import { verifyJwt } from "@/utils/jwt";
 
 const HANDOFF_AUDIENCE = "admin-storefront-handoff";
+const ADMIN_TOKEN_AUDIENCE = "admin";
+
+function getCookieValue(request: Request, name: string) {
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const cookies = cookieHeader.split(";").map((cookie) => cookie.trim());
+  const prefix = `${name}=`;
+  const cookie = cookies.find((item) => item.startsWith(prefix));
+
+  return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : "";
+}
+
+function getAdminJwtSecret() {
+  return process.env.ADMIN_JWT_SECRET ?? "";
+}
 
 function clearAdminCookie(response: NextResponse) {
   response.cookies.set(ADMIN_AUTH_COOKIE_NAME, "", {
@@ -72,6 +86,42 @@ async function verifyAdminHandoffToken(token: string) {
   return user;
 }
 
+async function verifyAdminCookie(request: Request) {
+  const secret = getAdminJwtSecret();
+  const token = getCookieValue(request, ADMIN_AUTH_COOKIE_NAME);
+
+  if (!secret || !token) return null;
+
+  const payload = verifyJwt(token, secret);
+  const userId = Number(payload.userId);
+
+  if (
+    !Number.isInteger(userId) ||
+    userId < 1 ||
+    payload.aud !== ADMIN_TOKEN_AUDIENCE ||
+    payload.role !== "ADMIN" ||
+    typeof payload.email !== "string"
+  ) {
+    return null;
+  }
+
+  const user = await client.db.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+    },
+  });
+
+  if (!user || user.email !== payload.email || user.role !== "ADMIN") {
+    return null;
+  }
+
+  return user;
+}
+
 function setStorefrontSessionCookie(
   response: NextResponse,
   request: Request,
@@ -104,7 +154,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    const user = await verifyAdminHandoffToken(token);
+    const user =
+      (await verifyAdminHandoffToken(token)) ?? (await verifyAdminCookie(request));
 
     if (!user) return invalidRedirect(request);
 

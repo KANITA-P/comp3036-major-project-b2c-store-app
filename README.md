@@ -2,19 +2,19 @@
 
 ## Project Overview
 
-Threadline is a B2C clothing store prototype built for the COMP3036-FS major project. The application provides a customer storefront for browsing second-hand inspired clothing products and a separate admin interface for basic product management.
+Threadline is a B2C clothing store built for the COMP3036-FS major project. The application provides a customer storefront for browsing second-hand inspired clothing products and a separate admin interface for product and order management.
 
 This repository is focused only on the B2C clothing store project. It was adapted from a previous assignment codebase, while the old blog application is preserved separately.
 
-The current version is a working B2C store prototype. It supports product browsing, category filtering, search, customer authentication, local cart management, mock checkout with persisted order records, customer purchase history, admin authentication, product create/edit/delete workflows, and admin purchase record viewing backed by PostgreSQL and Prisma.
+The application supports product browsing, category filtering, search, customer authentication, local cart management, checkout with persisted order records, customer purchase history, admin authentication, product create/edit/delete workflows, and admin purchase record viewing backed by PostgreSQL and Prisma.
 
-## Success Criteria
+## Key Capabilities
 
 - Customers can browse seeded clothing products from PostgreSQL.
 - Customers can search and filter products by category.
 - Customers can register, log in, log out, and view their session state.
 - Customers can add products to a local cart, update quantities, remove items, and see cart count/total updates.
-- Customers can complete a mock checkout flow that saves an order and see an order confirmation screen.
+- Customers can complete checkout, save an order, and see an order confirmation screen.
 - Customers can view past purchases with order dates, items, quantities, and totals.
 - Admin users can log in with JWT-based authentication.
 - Admin users can view, create, edit, and delete products.
@@ -23,7 +23,7 @@ The current version is a working B2C store prototype. It supports product browsi
 - E2E tests verify the main customer and admin flows.
 - GitHub Actions runs database setup, seed, lint, build/test workflow automatically.
 
-## Current Features
+## Features
 
 ### Storefront
 
@@ -33,9 +33,9 @@ The current version is a working B2C store prototype. It supports product browsi
 - Product search across product names, descriptions, and categories.
 - Cart stored in `localStorage`.
 - Cart page with product images, quantities, subtotals, remove controls, and order total.
-- Mock checkout page for logged-in customers.
+- Checkout page for logged-in customers.
 - Checkout creates confirmed order and order item records in PostgreSQL and decrements product stock.
-- Order confirmation page that clears the local cart after mock payment.
+- Order confirmation page that clears the local cart after checkout.
 - Purchase history page showing the logged-in customer's saved orders, dates, statuses, items, quantities, and totals.
 - Cart count and total update when products are added, removed, or updated.
 - Customer registration, login, logout, and current-user session endpoint.
@@ -63,44 +63,16 @@ The current version is a working B2C store prototype. It supports product browsi
 
 ### Testing
 
-- 43 passing Playwright E2E tests.
-- Tests cover customer auth, search, category filtering, product detail pages, cart behavior, mock checkout, persisted purchase history, checkout API validation, admin login, admin product list, create/edit/delete product management, admin purchase records, and access-control cases.
+- 51 passing Playwright E2E tests.
+- Tests cover customer auth, search, category filtering, product detail pages, cart behavior, checkout, persisted purchase history, checkout API validation, admin login, admin product list, create/edit/delete product management, admin purchase records, and access-control cases.
 - Web unit seed-data test with Vitest.
 - CI runs tests automatically.
 
-## Iteration 1 Status
+## Project Status
 
-Iteration 1 is complete as a semi-functional prototype.
+Threadline is implemented as a coursework B2C store. The storefront, customer authentication, cart, checkout, purchase history, admin authentication, product management, purchase record management, database integration, automated tests, CI workflow, and Vercel deployments are all in place.
 
-Completed:
-
-- Storefront browsing/search/filtering.
-- Cart page, cart count, and local cart interaction.
-- Mock checkout with persisted order records and order confirmation.
-- Customer purchase history page.
-- Customer registration/login/logout.
-- Admin JWT login.
-- Admin product list.
-- Admin create/edit product pages.
-- Admin product delete workflow.
-- Admin purchase records page.
-- PostgreSQL and Prisma integration.
-- Prisma seed data for categories and products.
-- Playwright E2E coverage for core flows.
-- GitHub Actions CI with PostgreSQL service, migration, seed, lint, and tests.
-
-Not completed yet:
-
-- Payment is currently a mock prototype flow; no real Stripe/PayPal integration is planned unless required.
-- Production deployment.
-
-## Remaining Work for Iteration 2/Final
-
-- Keep payment as a mock prototype flow unless the final marking requirements ask for a real provider.
-- Improve cart persistence beyond `localStorage`.
-- Add richer validation and error states for product/admin forms.
-- Deploy the web and admin applications.
-- Record and link the final demo video.
+The checkout flow records orders and decrements stock in PostgreSQL. It is designed for the project scope and does not process real card payments.
 
 ## Tech Stack
 
@@ -210,7 +182,7 @@ Run the full Turbo test pipeline:
 pnpm turbo test
 ```
 
-Run the autograding test groups separately:
+Run the test groups separately:
 
 ```bash
 pnpm turbo test-1
@@ -236,8 +208,8 @@ pnpm --filter @repo/playwright exec playwright test
 
 Current E2E status:
 
-- Playwright tests are organised into `test-1`, `test-2`, and `test-3` autograding groups.
-- Coverage includes customer auth, admin auth, search, filtering, product browsing, product detail pages, cart count, cart page loading, add/remove cart behavior, quantity limits, checkout login redirect, logged-in checkout access, checkout API validation, mock order confirmation, persisted purchase history, public product API, customer auth APIs, admin product APIs, admin product list, admin create/edit/delete flows, admin purchase records, and access-control cases.
+- Playwright tests are organised into `test-1`, `test-2`, and `test-3` groups.
+- Coverage includes customer auth, admin auth, search, filtering, product browsing, product detail pages, cart count, cart page loading, add/remove cart behavior, quantity limits, checkout login redirect, logged-in checkout access, checkout API validation, order confirmation, persisted purchase history, public product API, customer auth APIs, admin product APIs, admin product list, admin create/edit/delete flows, admin purchase records, and access-control cases.
 
 If a dev server is already running on ports `3001` or `3002`, stop it before running the Playwright command that starts its own servers.
 
@@ -254,7 +226,7 @@ The CI workflow:
 - Seeds the database.
 - Runs web and admin lint checks.
 - Installs the Playwright Chromium browser.
-- Runs `pnpm turbo test-1`, `pnpm turbo test-2`, and `pnpm turbo test-3` as separate autograding steps.
+- Runs `pnpm turbo test-1`, `pnpm turbo test-2`, and `pnpm turbo test-3` as separate test steps.
 
 ## API Documentation
 
@@ -411,7 +383,7 @@ Browser redirect support:
 
 #### `POST /api/orders`
 
-Creates a confirmed mock checkout order for the logged-in customer. The endpoint validates cart items against current products, rejects empty or invalid carts, saves order and order item records, and decrements stock in a database transaction.
+Creates a confirmed checkout order for the logged-in customer. The endpoint validates cart items against current products, rejects empty or invalid carts, saves order and order item records, and decrements stock in a database transaction.
 
 Request body:
 
@@ -565,9 +537,9 @@ Responses:
 - `404` when the product does not exist
 - `409` when the product has order history and cannot be safely deleted
 
-### Planned API Work
+### Backend Scope
 
-The core auth, product browsing API, checkout/order creation, customer order history pages, admin product APIs, and admin order record pages are implemented for the university project scope.
+The implemented backend covers customer authentication, product browsing, admin-to-storefront session handoff, checkout/order creation, customer order history, admin authentication, admin product management, and admin purchase record workflows.
 
 ## Project Structure
 
@@ -610,17 +582,15 @@ Deployment requirements:
 - Hosted web and admin Next.js applications.
 - Prisma migrations applied in the deployment environment.
 
-## Demo Video
+## Demo Walkthrough
 
-Demo video is planned for the final submission.
-
-The final demo should show:
+A complete project demonstration can show:
 
 - Customer browsing, filtering, and searching.
 - Customer registration/login/logout.
 - Adding products to the cart.
 - Updating/removing cart items.
-- Completing the mock checkout flow.
+- Completing the checkout flow.
 - Viewing the order confirmation and persisted purchase history.
 - Admin login.
 - Admin product list.
