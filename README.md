@@ -115,7 +115,7 @@ DATABASE_URL="postgresql://YOUR_USERNAME@localhost:5432/threadline_store?schema=
 JWT_SECRET="replace-with-a-long-random-customer-secret"
 NEXT_PUBLIC_ADMIN_URL="http://localhost:3002"
 NEXT_PUBLIC_WEB_URL="http://localhost:3001"
-ADMIN_EMAIL="admin@threadline.com"
+ADMIN_EMAIL="admin@example.com"
 ADMIN_PASSWORD="replace-with-a-strong-admin-password"
 ADMIN_JWT_SECRET="replace-with-a-long-random-admin-secret"
 ```
@@ -364,7 +364,7 @@ Response example:
   "user": {
     "id": 1,
     "name": "Threadline Admin",
-    "email": "admin@threadline.com",
+    "email": "admin@example.com",
     "role": "ADMIN"
   }
 }
@@ -418,7 +418,7 @@ Request body for JSON requests:
 
 ```json
 {
-  "email": "admin@threadline.com",
+  "email": "admin@example.com",
   "password": "replace-with-a-strong-admin-password"
 }
 ```
@@ -564,7 +564,7 @@ tests/
 
 ## Deployment
 
-The project can be deployed as two separate Next.js applications: the storefront app and the admin app.
+The project deployed as two separate Next.js applications: the storefront app and the admin app.
 
 Deployment links:
 
