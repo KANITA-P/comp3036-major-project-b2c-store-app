@@ -106,7 +106,7 @@ cd ../..
 
 ## Environment Variables
 
-Create `.env` files from the provided `.env.example` files where required. At minimum, the database package and apps need access to the database URL and JWT secret. The web app needs its own `apps/web/.env` when you run it directly.
+Create `.env` files from the provided `.env.example` files where required. At minimum, the database package and apps need access to the database URL and JWT secret. The web app needs its own `apps/web/.env` when you run it directly, and the admin app needs the same `JWT_SECRET` value for the admin-to-storefront handoff.
 
 Example:
 
@@ -123,13 +123,15 @@ ADMIN_JWT_SECRET="replace-with-a-long-random-admin-secret"
 Notes:
 
 - `DATABASE_URL` is used by Prisma and the Next.js apps.
-- `JWT_SECRET` is required for customer token signing. The app does not fall back to a default customer JWT secret.
+- `JWT_SECRET` is required for customer token signing and admin-to-storefront handoff signing. Use the same value in the web and admin app environments.
 - `NEXT_PUBLIC_ADMIN_URL` is used by the storefront navbar's Admin Login link. Use `http://localhost:3002` locally and the deployed admin app URL in production.
 - `NEXT_PUBLIC_WEB_URL` is used by the admin app's View Store link. Use `http://localhost:3001` locally and the deployed storefront URL in production.
 - `ADMIN_EMAIL` and `ADMIN_PASSWORD` are used by the database seed to create the single admin user. The password is hashed with bcrypt before storage.
 - `ADMIN_JWT_SECRET` is used for admin token signing and should be separate from the customer `JWT_SECRET`.
 
 ## Database Setup
+
+The project works with either a local PostgreSQL database or a hosted PostgreSQL database such as Neon. For Neon, set `DATABASE_URL` to the Neon connection string in the relevant `.env` files and deployment environment, then run the same Prisma migration and seed commands below. Do not commit the real Neon connection string.
 
 Start PostgreSQL:
 
@@ -354,6 +356,7 @@ Authentication requirements:
 
 - Requires a valid signed handoff token created by the admin app.
 - The token must have `aud: "admin-storefront-handoff"` and `role: "ADMIN"`.
+- Browser redirect requests may also exchange a valid admin session cookie into a storefront session before clearing the admin cookie.
 - The matching database user must still exist and have `role: "ADMIN"`.
 
 Response example:
@@ -378,7 +381,7 @@ Responses:
 Browser redirect support:
 
 - `GET /api/admin-storefront-session?token=...` is also supported for the admin dashboard's **View Store** redirect flow.
-- Valid tokens redirect to `/` and set the storefront session cookie.
+- Valid tokens, or valid admin session cookies during the browser handoff, redirect to `/` and set the storefront session cookie.
 - Invalid tokens redirect to `/` without creating a storefront session.
 
 #### `POST /api/orders`
@@ -564,7 +567,7 @@ tests/
 
 ## Deployment
 
-The project deployed as two separate Next.js applications: the storefront app and the admin app.
+The project is deployed as two separate Next.js applications: the storefront app and the admin app.
 
 Deployment links:
 
@@ -575,7 +578,7 @@ Deployment requirements:
 
 - Hosted PostgreSQL database.
 - Production `DATABASE_URL`.
-- Production `JWT_SECRET`.
+- Production `JWT_SECRET` shared by the storefront and admin apps.
 - Production `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `ADMIN_JWT_SECRET`.
 - Storefront `NEXT_PUBLIC_ADMIN_URL` set to the deployed admin app URL.
 - Admin `NEXT_PUBLIC_WEB_URL` set to the deployed storefront app URL.
